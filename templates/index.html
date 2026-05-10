@@ -1,12 +1,208 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <script src="script.js" type="text/javascript"></script>
-    <title>Woo~God!</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>市集通 MarketPass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Test</h1>
-</body>
 
+<!-- ══ NAVBAR ════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="brand-icon">⛩</span>
+    <span class="brand-name">市集通</span>
+  </div>
+
+  <div class="nav-right">
+    <!-- 遊客模式 -->
+    {% if role == 'visitor' %}
+    <button class="btn btn-outline" id="loginBtn">攤主登入</button>
+
+    <!-- 攤主模式 -->
+    {% elif role == 'vendor' %}
+    <span class="vendor-badge">攤主：{{ vendor_name }}</span>
+    <button class="btn btn-ghost" id="myStallBtn">我的攤位</button>
+    <a href="/vendor/logout" class="btn btn-outline-sm">登出</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- ══ HERO ═══════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">智慧市集導覽系統</p>
+    <h1 class="hero-title">逛市集<br><em>不再等</em></h1>
+    <p class="hero-sub">即時排隊資訊・地圖導覽・線上點餐<br>讓每次市集體驗都更輕鬆愉快</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary btn-lg">探索攤位</button>
+      <button class="btn btn-secondary btn-lg">查看地圖</button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="floating-card card-1">
+      <span class="card-icon">🍜</span>
+      <div>
+        <div class="card-title">阿婆米苔目</div>
+        <div class="card-queue green">排隊中 3 人</div>
+      </div>
+    </div>
+    <div class="floating-card card-2">
+      <span class="card-icon">🧋</span>
+      <div>
+        <div class="card-title">手作珍珠奶茶</div>
+        <div class="card-queue yellow">排隊中 11 人</div>
+      </div>
+    </div>
+    <div class="floating-card card-3">
+      <span class="card-icon">🎨</span>
+      <div>
+        <div class="card-title">文青手作飾品</div>
+        <div class="card-queue green">排隊中 1 人</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STALL GRID（遊客版） ═══════════════════════════════════ -->
+{% if role == 'visitor' %}
+<section class="stalls-section">
+  <div class="section-header">
+    <h2>熱門攤位</h2>
+    <div class="filter-tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">美食</button>
+      <button class="tab">手作</button>
+      <button class="tab">飲品</button>
+    </div>
+  </div>
+  <div class="stall-grid" id="stallGrid">
+    <!-- JS 動態填入 -->
+    <div class="stall-card">
+      <div class="stall-img">🍜</div>
+      <div class="stall-info">
+        <h3>阿婆米苔目</h3>
+        <p class="zone">美食區 A3</p>
+        <div class="queue-badge green">🟢 3 人排隊・約 9 分鐘</div>
+      </div>
+      <button class="btn btn-sm">取號排隊</button>
+    </div>
+    <div class="stall-card">
+      <div class="stall-img">🧋</div>
+      <div class="stall-info">
+        <h3>手作珍珠奶茶</h3>
+        <p class="zone">飲品區 B1</p>
+        <div class="queue-badge yellow">🟡 11 人排隊・約 33 分鐘</div>
+      </div>
+      <button class="btn btn-sm">取號排隊</button>
+    </div>
+    <div class="stall-card">
+      <div class="stall-img">🎨</div>
+      <div class="stall-info">
+        <h3>文青手作飾品</h3>
+        <p class="zone">手作區 C2</p>
+        <div class="queue-badge green">🟢 1 人排隊・約 5 分鐘</div>
+      </div>
+      <button class="btn btn-sm">取號排隊</button>
+    </div>
+    <div class="stall-card">
+      <div class="stall-img">🌮</div>
+      <div class="stall-info">
+        <h3>墨西哥捲餅</h3>
+        <p class="zone">美食區 A7</p>
+        <div class="queue-badge red">🔴 24 人排隊・約 72 分鐘</div>
+      </div>
+      <button class="btn btn-sm">取號排隊</button>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══ 攤主面板 ════════════════════════════════════════════════ -->
+{% if role == 'vendor' %}
+<section class="vendor-panel">
+  <div class="panel-header">
+    <h2>攤主後台</h2>
+    <p>歡迎回來，{{ vendor_name }}！</p>
+  </div>
+  <div class="panel-grid">
+    <div class="panel-card" id="setupStallCard">
+      <div class="panel-icon">🏪</div>
+      <h3>設立攤位</h3>
+      <p>填寫攤位資訊，送審後即可開始營業</p>
+      <button class="btn btn-primary" id="openStallForm">建立攤位</button>
+    </div>
+    <div class="panel-card">
+      <div class="panel-icon">📦</div>
+      <h3>管理商品</h3>
+      <p>新增、修改攤位販售的商品</p>
+      <button class="btn btn-outline">前往管理</button>
+    </div>
+    <div class="panel-card">
+      <div class="panel-icon">🧾</div>
+      <h3>訂單管理</h3>
+      <p>查看並處理顧客的訂單</p>
+      <button class="btn btn-outline">查看訂單</button>
+    </div>
+    <div class="panel-card">
+      <div class="panel-icon">🎟</div>
+      <h3>排隊狀況</h3>
+      <p>即時查看目前排隊人數</p>
+      <button class="btn btn-outline">查看排隊</button>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══ 登入 MODAL ══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" id="closeModal">✕</button>
+    <h2 class="modal-title">攤主登入</h2>
+    <p class="modal-sub">請使用您的攤主帳號登入</p>
+    <div class="form-group">
+      <label>帳號</label>
+      <input type="text" id="inputUsername" placeholder="輸入帳號" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>密碼</label>
+      <input type="password" id="inputPassword" placeholder="輸入密碼">
+    </div>
+    <div class="form-error" id="loginError"></div>
+    <button class="btn btn-primary btn-full" id="submitLogin">登入</button>
+    <p class="modal-hint">測試帳號：vendor1 ／ 密碼：1234</p>
+  </div>
+</div>
+
+<!-- ══ 建立攤位 MODAL ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="stallModal">
+  <div class="modal">
+    <button class="modal-close" id="closeStallModal">✕</button>
+    <h2 class="modal-title">建立攤位申請</h2>
+    <p class="modal-sub">送出後需等待管理員審核</p>
+    <div class="form-group">
+      <label>攤位名稱</label>
+      <input type="text" id="stallName" placeholder="例：阿婆米苔目">
+    </div>
+    <div class="form-group">
+      <label>區域類型</label>
+      <select id="zoneType">
+        <option value="">請選擇</option>
+        <option value="food">美食區</option>
+        <option value="drink">飲品區</option>
+        <option value="craft">手作區</option>
+        <option value="other">其他</option>
+      </select>
+    </div>
+    <div class="form-error" id="stallError"></div>
+    <button class="btn btn-primary btn-full" id="submitStall">送出申請</button>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
 </html>
