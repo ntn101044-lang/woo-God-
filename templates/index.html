@@ -1,44 +1,116 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en"> <!--set 網頁語言-->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>市集通 MarketPass</title>
+  <title>Woo~God</title>
+  <!--從 Google Fonts 下載字體-->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+  <!-- jQuery UI CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui/jquery-ui.css') }}">
+  <!-- 主樣式 -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <!-- 主 JS -->
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+
 </head>
 <body>
 
 <!-- ══ NAVBAR ════════════════════════════════════════════════ -->
-<h1>確認有開分支</h1>
+<!-- Overlay sidebar遮罩 -->
+<div id="overlay" class="overlay1"></div>
+
+<!-- Sidebar -->
+<aside id="sidebar" class="sidebar">
+
+  <!-- Sidebar Header -->
+  <div class="sidebar-header">
+
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <span>⛩</span>
+      <span class="logo-text">市集通</span>
+    </div>
+
+    <!-- Close Button -->
+    <button id="closeSidebar" class="close-btn">
+      ✕
+    </button>
+
+  </div>
+
+  <!-- Search -->
+  <div class="sidebar-search">
+    <input type="text" placeholder="搜尋攤位..." class="search-input">
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar-menu">
+
+    <a href="#food" class="menu-item">🍜 美食</a>
+
+    <a href="#drink" class="menu-item">🧋 飲料</a>
+
+    <a href="#dessert" class="menu-item">🍰 甜點</a>
+
+    <a href="#handmade" class="menu-item">🎨 手作</a>
+
+    <a href="#game" class="menu-item">🎮 遊戲</a>
+
+  </nav>
+
+  <!-- Quick Actions -->
+  <div class="sidebar-actions">
+
+    <button class="action-btn">
+      🗺 查看地圖
+    </button>
+
+    <button class="action-btn">
+      🔥 熱門攤位
+    </button>
+
+    <button class="action-btn">
+      ⚡ 排隊最少
+    </button>
+
+  </div>
+
+</aside>
+  
 <nav class="navbar">
   <div class="nav-brand">
-    <span class="brand-icon">⛩</span>
-    <span class="brand-name">市集通</span>
+    <span id=openSidebar class="logo-icon menu-btn">⛩</span>
+    <span class="brand-name">Woo~God</span>
   </div>
 
   <div class="nav-right">
     <!-- 遊客模式 -->
     {% if role == 'visitor' %}
-    <button class="btn btn-outline" id="loginBtn">攤主登入</button>
+    <button class="btn btn-outline" id="loginBtn">Vendor Log In</button>
 
     <!-- 攤主模式 -->
     {% elif role == 'vendor' %}
-    <span class="vendor-badge">攤主：{{ vendor_name }}</span>
-    <button class="btn btn-ghost" id="myStallBtn">我的攤位</button>
-    <a href="/vendor/logout" class="btn btn-outline-sm">登出</a>
+    <span class="vendor-badge">Vendor：{{ vendor_name }}</span>
+    <button class="btn btn-ghost" id="myStallBtn">MyStall</button>
+    <a href="/vendor/logout" class="btn btn-outline-sm">Log Out</a>
     {% endif %}
   </div>
 </nav>
 
+
 <!-- ══ HERO ═══════════════════════════════════════════════════ -->
+ <!--這裡要改成動態生成Card 當前排隊人數多的前三名顯示-->
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-content">
-    <p class="hero-eyebrow">智慧市集導覽系統</p>
-    <h1 class="hero-title">逛市集<br><em>不再等</em></h1>
-    <p class="hero-sub">即時排隊資訊・地圖導覽・線上點餐<br>讓每次市集體驗都更輕鬆愉快</p>
+    <p class="hero-eyebrow">Smart Market Guide System</p>
+    <h1 class="hero-title">Visit<br><em>No more waiting</em></h1>
+    <p class="hero-sub">Real-time queue infor・map navigation・online ordering<br>make every market experience easier and more enjoyable!</p>
     <div class="hero-actions">
       <button class="btn btn-primary btn-lg">探索攤位</button>
       <button class="btn btn-secondary btn-lg">查看地圖</button>
@@ -204,6 +276,5 @@
   </div>
 </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
