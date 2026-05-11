@@ -31,7 +31,7 @@ body {
 
 /* ══ NAVBAR ══════════════════════════════════════════════════ */
 .navbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 2;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 2rem;
   height: 64px;
@@ -41,9 +41,9 @@ body {
 }
 
 .nav-brand { display: flex; align-items: center; gap: 10px; }
-.brand-icon { font-size: 1.4rem; }
+.brand-icon { font-size: 1.4rem; cursor: pointer;}
 .brand-name {
-  font-family: 'Syne', sans-serif;
+  font-family: sans-serif;
   font-size: 1.2rem; font-weight: 800;
   color: var(--accent);
   letter-spacing: 0.02em;
@@ -57,6 +57,39 @@ body {
   border: 1px solid rgba(232,168,71,0.3);
   padding: 4px 12px; border-radius: 20px;
 }
+
+/* Overlay */
+.overlay1 {
+  display:none; position:fixed; top:0; left:0;
+  width:100%; height:100%; background: rgba(0,0,0,0.5);
+  z-index: 3;
+}
+
+.sidebar {
+  position: fixed; top: 0; left: 0;
+  width: 250px; height: 100%;
+  background:var(--yellow) ; padding: 16px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  overflow-y: auto; z-index: 3;
+  transition: transform 0.3s ease;
+}
+
+#sidebar.hide {transform: translateX(-250px); }
+#sidebar.show {transform: translateX(0); }
+
+/* Sidebar 調整 */
+  #sidebar { 
+    transform: translateX(-260px); 
+    position: fixed;
+    z-index: 4;
+    width: 220px; height: 100%;
+  }
+  #closeSidebar {display: inline; top: 8px; right: 8px;}
+  #topbar {display: flex; background-color: #fbe792; color: #8C7764;}
+  .page-header-title {margin-top: 50px;}
+  .logo {margin-top: 24px;}
+  .logophoto:hover {transform: none;}
+  .wow{width: 130px; height: 130px;}
 
 /* ══ BUTTONS ═════════════════════════════════════════════════ */
 .btn {
@@ -128,7 +161,7 @@ body {
 }
 
 .hero-title {
-  font-family: 'Syne', sans-serif;
+  font-family: sans-serif;
   font-size: clamp(3rem, 6vw, 5rem);
   font-weight: 800; line-height: 1.05;
   color: var(--text); margin-bottom: 1.5rem;
@@ -268,7 +301,7 @@ body {
 
 /* ══ MODAL ═══════════════════════════════════════════════════ */
 .modal-overlay {
-  display: none; position: fixed; inset: 0; z-index: 200;
+  display: none; position: fixed; inset: 0; z-index: 3;
   background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
   align-items: center; justify-content: center;
 }
