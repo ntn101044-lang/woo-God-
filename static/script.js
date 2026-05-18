@@ -153,3 +153,20 @@ overlay.addEventListener("click", () => {
   });
 
 });
+
+/* ══ 查看地圖按鈕 ════════════════════════════════════════════ */
+function scrollToMap() {
+  const map = document.getElementById('mapSection');
+  if (map) map.scrollIntoView({ behavior: 'smooth' });
+  // 若 sidebar 開著，順手關掉
+  sidebar.classList.remove('show');
+  overlay.style.display = 'none';
+}
+
+// Hero 的「查看地圖」按鈕
+$('.hero-actions .btn-secondary').on('click', scrollToMap);
+
+// Sidebar 的「查看地圖」按鈕
+$('.sidebar-actions .action-btn').filter(function() {
+  return $(this).text().includes('查看地圖');
+}).on('click', scrollToMap);
