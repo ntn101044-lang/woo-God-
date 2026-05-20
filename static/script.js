@@ -71,24 +71,31 @@ $(function () {
       }
     });
   }
-  /* ══漢堡選單點擊 ══════════════════════════════════════════ */
+
+/* ══漢堡選單點擊 ══════════════════════════════════════════ */
 // Sidebar 小螢幕
-const sidebar = document.getElementById("sidebar");
-const overlay = document.getElementById("overlay");
-
-document.getElementById("openSidebar").addEventListener("click", () => {
-  sidebar.classList.add("show");
-  overlay.style.display = "block";
+$("#openSidebar").click(function () {
+  $("#sidebar").addClass("show");
+  $("#overlaySideber").show();
 });
 
-document.getElementById("closeSidebar").addEventListener("click", () => {
-  sidebar.classList.remove("show");
-  overlay.style.display = "none";
+$("#closeSidebar, #overlaySideber").click(function () {
+  $("#sidebar").removeClass("show");
+  $("#overlaySideber").hide();
 });
 
-overlay.addEventListener("click", () => {
-  sidebar.classList.remove("show");
-  overlay.style.display = "none";
+/* ══ 登出按鈕 ══════════════════════════════════════════ */
+$("#logoutBtn").click(function () {
+  $("#logoutPage").addClass("show");
+  $("#overlayLogout").show();
+});
+
+$("#closeLogout, #overlayLogout").click(function () {
+  $("#logoutPage").removeClass("show");
+  $("#overlayLogout").hide();
+});
+$("#Logout").click(function () {
+  window.location.href = "/vendor/logout";
 });
 
   /* ══ 建立攤位 Modal ══════════════════════════════════════════ */
@@ -160,7 +167,7 @@ function scrollToMap() {
   if (map) map.scrollIntoView({ behavior: 'smooth' });
   // 若 sidebar 開著，順手關掉
   sidebar.classList.remove('show');
-  overlay.style.display = 'none';
+  overlaySideber.style.display = 'none';
 }
 
 // Hero 的「查看地圖」按鈕
