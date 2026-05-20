@@ -21,15 +21,14 @@
 <body>
 
 <!-- ══ NAVBAR ════════════════════════════════════════════════ -->
+{% if role == 'visitor' %}
 <!-- Overlay sidebar遮罩 -->
-<div id="overlay" class="overlay1"></div>
+<div id="overlaySideber" class="overlaySideber"></div>
 
 <!-- Sidebar -->
 <aside id="sidebar" class="sidebar">
-
   <!-- Sidebar Header -->
   <div class="sidebar-header">
-
     <!-- Logo -->
     <div class="sidebar-logo">
       <span>⛩</span>
@@ -40,7 +39,6 @@
     <button id="closeSidebar" class="close-btn">
       ✕
     </button>
-
   </div>
 
   <!-- Search -->
@@ -50,39 +48,30 @@
 
   <!-- Navigation -->
   <nav class="sidebar-menu">
-
     <a href="#food" class="menu-item">🍜 美食</a>
-
     <a href="#drink" class="menu-item">🧋 飲料</a>
-
     <a href="#dessert" class="menu-item">🍰 甜點</a>
-
     <a href="#handmade" class="menu-item">🎨 手作</a>
-
     <a href="#game" class="menu-item">🎮 遊戲</a>
-
   </nav>
 
   <div class="sidebar-divider"></div>
   
   <!-- Quick Actions -->
   <div class="sidebar-actions">
-
+    <button class="action-btn">
+      🔥 熱門攤位
+    </button>
+    <button class="action-btn">
+      ⚡ 排隊最少
+    </button>
     <button class="action-btn">
       🗺 查看地圖
     </button>
 
-    <button class="action-btn">
-      🔥 熱門攤位
-    </button>
-
-    <button class="action-btn">
-      ⚡ 排隊最少
-    </button>
-
   </div>
-
 </aside>
+{% endif %}
   
 <nav class="navbar">
   <div class="nav-brand">
@@ -97,15 +86,17 @@
 
     <!-- 攤主模式 -->
     {% elif role == 'vendor' %}
-    <span class="vendor-badge">Vendor：{{ vendor_name }}</span>
+    <span class="vendor-badge">Vendor:{{ vendor_name }}</span>
     <button class="btn btn-ghost" id="myStallBtn">MyStall</button>
-    <a href="/vendor/logout" class="btn btn-outline-sm">Log Out</a>
+    <button id='logoutBtn' class="btn btn-outline-sm">Log Out</button>
+
     {% endif %}
   </div>
 </nav>
 
 
 <!-- ══ HERO ═══════════════════════════════════════════════════ -->
+{% if role == 'visitor' %}
  <!--這裡要改成動態生成Card 當前排隊人數多的前三名顯示-->
 <section class="hero">
   <div class="hero-bg"></div>
@@ -144,7 +135,6 @@
 </section>
 
 <!-- ══ STALL GRID（遊客版） ═══════════════════════════════════ -->
-{% if role == 'visitor' %}
 <section class="stalls-section">
   <div class="section-header">
     <h2>熱門攤位</h2>
@@ -199,6 +189,7 @@
 
 <!-- ══ 攤主面板 ════════════════════════════════════════════════ -->
 {% if role == 'vendor' %}
+
 <section class="vendor-panel">
   <div class="panel-header">
     <h2>攤主後台</h2>
@@ -229,6 +220,16 @@
       <p>即時查看目前排隊人數</p>
       <button class="btn btn-outline">查看排隊</button>
     </div>
+  </div>
+  <!-- Overlay logout遮罩 -->
+  <div id="overlayLogout" class="overlayLogout"></div>
+  
+  <div id="logoutPage">
+    <button id="closeLogout" class="close-btn ">
+      ✕
+    </button>
+    <p>sure?</p>
+    <button id="Logout">i'm sure!</button>
   </div>
 </section>
 {% endif %}
@@ -279,14 +280,15 @@
 </div>
 
 <!-- ══ 地圖區塊 ══════════════════════════════════════════════ -->
+{% if role == 'visitor' %}
 <section class="map-section" id="mapSection">
   <div class="section-header">
     <h2>📍 市集地圖</h2>
   </div>
   <div class="map-placeholder">
-    <img src="{{ url_for('static', filename='Map.png') }}" alt="市集地圖">
+    <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖">
   </div>
 </section>
-
+{% endif %}
 </body>
 </html>
