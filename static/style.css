@@ -316,39 +316,7 @@ body {
 
 .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* ══ FLOATING CARDS ══════════════════════════════════════════ */
-.hero-visual {
-  position: relative; z-index: 1;
-  height: 320px;
-}
 
-.floating-card {
-  position: absolute;
-  display: flex; align-items: center; gap: 12px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 14px 18px;
-  box-shadow: var(--shadow);
-  animation: float 4s ease-in-out infinite;
-  min-width: 200px;
-}
-
-.floating-card .card-icon { font-size: 2rem; }
-.floating-card .card-title { font-weight: 500; font-size: 0.9rem; }
-.floating-card .card-queue { font-size: 0.78rem; margin-top: 3px; }
-.card-queue.green { color: var(--green); }
-.card-queue.yellow { color: var(--yellow); }
-.card-queue.red { color: var(--red); }
-
-.card-1 { top: 20px; left: 0; animation-delay: 0s; }
-.card-2 { top: 120px; left: 60px; animation-delay: 1.3s; }
-.card-3 { top: 230px; left: 10px; animation-delay: 0.7s; }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
 
 /* ══ STALLS SECTION ══════════════════════════════════════════ */
 .stalls-section {
@@ -548,3 +516,220 @@ body {
   object-fit: cover;
   border-radius: var(--radius-lg);
 }
+
+/* ══ 左右滑動軌道 ════════════════════════════════════════════ */
+.scroll-track-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+ 
+.scroll-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 12px 4px 16px;
+  flex: 1;
+  /* 隱藏 scrollbar 但保留功能 */
+  scrollbar-width: none;
+}
+.scroll-track::-webkit-scrollbar { display: none; }
+ 
+/* 滑動箭頭 */
+.scroll-arrow {
+  flex-shrink: 0;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 1.3rem; line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none;
+}
+.scroll-arrow:hover {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+ 
+/* 滑動卡片（比 stall-card 窄，固定寬度） */
+.scroll-card {
+  flex-shrink: 0;
+  width: 200px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.2rem;
+  display: flex; flex-direction: column; gap: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.scroll-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+}
+.scroll-card .stall-img {
+  font-size: 2rem;
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+}
+.scroll-card .stall-name {
+  font-size: 0.9rem; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.scroll-card .stall-zone {
+  font-size: 0.75rem; color: var(--text-muted);
+}
+.scroll-card .queue-badge {
+  font-size: 0.75rem; margin-top: 2px;
+}
+ 
+/* 載入提示 */
+.scroll-loading {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 1rem 0;
+}
+ 
+/* ══ 所有攤位 Grid 空狀態 ════════════════════════════════════ */
+.stall-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem 0;
+  font-size: 0.9rem;
+}
+
+
+/* ══ 遊客浮動訂單按鈕 ════════════════════════════════════════ */
+.visitor-fab {
+  position: fixed;
+  bottom: 2rem; right: 2rem;
+  z-index: 500;
+}
+.fab-btn {
+  position: relative;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(232,168,71,0.4);
+  font-size: 1.4rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.fab-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(232,168,71,0.5);
+}
+.fab-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.7rem; font-weight: 700;
+  min-width: 18px; height: 18px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px;
+}
+ 
+/* ══ 商品管理 Modal ══════════════════════════════════════════ */
+.add-product-form {
+  background: var(--bg3);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1.2rem;
+}
+.form-row {
+  display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;
+}
+.form-row .form-group { margin-bottom: 0; }
+ 
+.product-mgmt-list { display: flex; flex-direction: column; gap: 8px; }
+ 
+.product-mgmt-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+.product-mgmt-item .p-name { font-weight: 600; font-size: 0.9rem; }
+.product-mgmt-item .p-price { color: var(--accent); font-size: 0.85rem; }
+.btn-delete {
+  background: transparent;
+  border: 1px solid var(--red);
+  color: var(--red);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-delete:hover { background: rgba(232,91,71,0.15); }
+ 
+/* ══ modal-lg 加大版 ═════════════════════════════════════════ */
+.modal-lg { max-width: 560px; }
+ 
+/* ══ 訂單卡片 ════════════════════════════════════════════════ */
+.orders-list { display: flex; flex-direction: column; gap: 12px; max-height: 65vh; overflow-y: auto; }
+.order-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+}
+.order-card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 8px;
+}
+.order-id { font-weight: 700; font-size: 0.9rem; }
+.order-sub { font-size: 0.78rem; color: var(--text-muted); display: block; margin-top: 2px; }
+.order-status-badge {
+  font-size: 0.75rem; padding: 3px 10px; border-radius: 20px;
+  font-weight: 600; white-space: nowrap;
+}
+.order-items { border-top: 1px solid var(--border); padding-top: 8px; margin-bottom: 8px; }
+.order-item-row {
+  display: flex; justify-content: space-between;
+  font-size: 0.83rem; color: var(--text-muted);
+  padding: 2px 0;
+}
+.order-footer {
+  display: flex; justify-content: space-between;
+  font-size: 0.78rem; color: var(--text-muted);
+  border-top: 1px solid var(--border); padding-top: 8px;
+}
+.order-total { color: var(--accent); font-weight: 600; }
+.order-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.btn-cancel {
+  background: transparent; border: 1px solid var(--red);
+  color: var(--red); border-radius: 8px;
+  padding: 6px 12px; font-size: 0.8rem; cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-cancel:hover { background: rgba(232,91,71,0.12); }
+ 
+/* ══ Modal Tabs ══════════════════════════════════════════════ */
+.modal-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.2rem;
+}
+.modal-tab {
+  flex: 1; padding: 10px;
+  background: transparent; border: none;
+  color: var(--text-muted); font-size: 0.9rem;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
