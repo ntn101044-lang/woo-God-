@@ -34,18 +34,15 @@
       <span>⛩</span>
       <span class="logo-text">市集通</span>
     </div>
-
     <!-- Close Button -->
     <button id="closeSidebar" class="close-btn">
       ✕
     </button>
   </div>
-
   <!-- Search -->
   <div class="sidebar-search">
     <input type="text" placeholder="搜尋攤位..." class="search-input">
   </div>
-
   <!-- Navigation -->
   <nav class="sidebar-menu">
     <a href="#food" class="menu-item">🍜 美食</a>
@@ -75,21 +72,24 @@
   
 <nav class="navbar">
   <div class="nav-brand">
-    <span id=openSidebar class="logo-icon menu-btn">⛩</span>
+    <span id="openSidebar" class="logo-icon menu-btn">⛩</span>
     <span class="brand-name">Woo~God</span>
   </div>
-
   <div class="nav-right">
-    <!-- 遊客模式 -->
     {% if role == 'visitor' %}
-    <button class="btn btn-outline" id="loginBtn">Vendor Log In</button>
-
-    <!-- 攤主模式 -->
+      <!-- 遊客已登入 -->
+      <span id="visitorInfo" class="visitor-info" {% if not visitor_account %}style="display:none"{% endif %}>
+        <span id="visitorAccount" class="vendor-badge">👤 {{ visitor_account }}</span>
+        <a href="/visitor/logout" class="btn btn-outline-sm">登出</a>
+      </span>
+      <!-- 遊客未登入 -->
+      <button class="btn btn-outline btn-sm" id="visitorLoginBtn" {% if visitor_account %}style="display:none"{% endif %}>會員登入</button>
+      <button class="btn btn-outline" id="loginBtn">Vendor Log In</button>
     {% elif role == 'vendor' %}
-    <span class="vendor-badge">Vendor:{{ vendor_name }}</span>
-    <button class="btn btn-ghost" id="myStallBtn">MyStall</button>
-    <button id='logoutBtn' class="btn btn-outline-sm">Log Out</button>
-
+      <span class="vendor-badge">Vendor: {{ vendor_name }}</span>
+      <button class="btn btn-ghost" id="myStallBtn">MyStall</button>
+      <!-- 攤主登出按鈕 -->
+      <button id='logoutBtn' class="btn btn-outline-sm">Log Out</button>
     {% endif %}
   </div>
 </nav>
@@ -109,80 +109,52 @@
       <button class="btn btn-secondary btn-lg">查看地圖</button>
     </div>
   </div>
-  <div class="hero-visual">
-    <div class="floating-card card-1">
-      <span class="card-icon">🍜</span>
-      <div>
-        <div class="card-title">阿婆米苔目</div>
-        <div class="card-queue green">排隊中 3 人</div>
-      </div>
-    </div>
-    <div class="floating-card card-2">
-      <span class="card-icon">🧋</span>
-      <div>
-        <div class="card-title">手作珍珠奶茶</div>
-        <div class="card-queue yellow">排隊中 11 人</div>
-      </div>
-    </div>
-    <div class="floating-card card-3">
-      <span class="card-icon">🎨</span>
-      <div>
-        <div class="card-title">文青手作飾品</div>
-        <div class="card-queue green">排隊中 1 人</div>
-      </div>
-    </div>
-  </div>
 </section>
 
-<!-- ══ STALL GRID（遊客版） ═══════════════════════════════════ -->
+<!-- ══ 🔥 熱門攤位（左右滑動）══════════════════════════════════ -->
 <section class="stalls-section">
   <div class="section-header">
-    <h2>熱門攤位</h2>
+    <h2>🔥 排隊熱門</h2>
+    <span class="section-hint">人氣最旺的攤位</span>
+  </div>
+  <div class="scroll-track-wrapper">
+    <button class="scroll-arrow arrow-left" id="hotArrowLeft">‹</button>
+    <div class="scroll-track" id="hotStallTrack">
+      <!-- JS 動態填入 -->
+      <div class="scroll-loading">載入中...</div>
+    </div>
+    <button class="scroll-arrow arrow-right" id="hotArrowRight">›</button>
+  </div>
+</section>
+ 
+<!-- ══ 😌 少人排隊（左右滑動）══════════════════════════════════ -->
+<section class="stalls-section">
+  <div class="section-header">
+    <h2>😌 輕鬆入場</h2>
+    <span class="section-hint">幾乎不用等的攤位</span>
+  </div>
+  <div class="scroll-track-wrapper">
+    <button class="scroll-arrow arrow-left" id="fewArrowLeft">‹</button>
+    <div class="scroll-track" id="fewStallTrack">
+      <div class="scroll-loading">載入中...</div>
+    </div>
+    <button class="scroll-arrow arrow-right" id="fewArrowRight">›</button>
+  </div>
+</section>
+ 
+<!-- ══ 全部攤位 ════════════════════════════════════════════════ -->
+<section class="stalls-section">
+  <div class="section-header">
+    <h2>🏪 所有攤位</h2>
     <div class="filter-tabs">
-      <button class="tab active">全部</button>
-      <button class="tab">美食</button>
-      <button class="tab">手作</button>
-      <button class="tab">飲品</button>
+      <button class="tab active" data-filter="all">全部</button>
+      <button class="tab" data-filter="food">美食</button>
+      <button class="tab" data-filter="craft">手作</button>
+      <button class="tab" data-filter="drink">飲品</button>
     </div>
   </div>
-  <div class="stall-grid" id="stallGrid">
-    <!-- JS 動態填入 -->
-    <div class="stall-card">
-      <div class="stall-img">🍜</div>
-      <div class="stall-info">
-        <h3>阿婆米苔目</h3>
-        <p class="zone">美食區 A3</p>
-        <div class="queue-badge green">🟢 3 人排隊・約 9 分鐘</div>
-      </div>
-      <button class="btn btn-sm">取號排隊</button>
-    </div>
-    <div class="stall-card">
-      <div class="stall-img">🧋</div>
-      <div class="stall-info">
-        <h3>手作珍珠奶茶</h3>
-        <p class="zone">飲品區 B1</p>
-        <div class="queue-badge yellow">🟡 11 人排隊・約 33 分鐘</div>
-      </div>
-      <button class="btn btn-sm">取號排隊</button>
-    </div>
-    <div class="stall-card">
-      <div class="stall-img">🎨</div>
-      <div class="stall-info">
-        <h3>文青手作飾品</h3>
-        <p class="zone">手作區 C2</p>
-        <div class="queue-badge green">🟢 1 人排隊・約 5 分鐘</div>
-      </div>
-      <button class="btn btn-sm">取號排隊</button>
-    </div>
-    <div class="stall-card">
-      <div class="stall-img">🌮</div>
-      <div class="stall-info">
-        <h3>墨西哥捲餅</h3>
-        <p class="zone">美食區 A7</p>
-        <div class="queue-badge red">🔴 24 人排隊・約 72 分鐘</div>
-      </div>
-      <button class="btn btn-sm">取號排隊</button>
-    </div>
+  <div class="stall-grid" id="allStallGrid">
+    <div class="scroll-loading">載入中...</div>
   </div>
 </section>
 {% endif %}
@@ -212,7 +184,7 @@
       <div class="panel-icon">🧾</div>
       <h3>訂單管理</h3>
       <p>查看並處理顧客的訂單</p>
-      <button class="btn btn-outline">查看訂單</button>
+      <button id='vendorOrdersBtn' class="btn btn-outline">查看訂單</button>
     </div>
     <div class="panel-card">
       <div class="panel-icon">🎟</div>
@@ -234,7 +206,11 @@
 </section>
 {% endif %}
 
-<!-- ══ 登入 MODAL ══════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════════
+     MODALS
+     ════════════════════════════════════════════════════════════ -->
+ 
+<!-- ── 攤主登入 ────────────────────────────────────────────── -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal">
     <button class="modal-close" id="closeModal">✕</button>
@@ -253,8 +229,8 @@
     <p class="modal-hint">測試帳號：vendor1 ／ 密碼：1234</p>
   </div>
 </div>
-
-<!-- ══ 建立攤位 MODAL ══════════════════════════════════════════ -->
+ 
+<!-- ── 建立攤位 ────────────────────────────────────────────── -->
 <div class="modal-overlay" id="stallModal">
   <div class="modal">
     <button class="modal-close" id="closeStallModal">✕</button>
@@ -278,6 +254,137 @@
     <button class="btn btn-primary btn-full" id="submitStall">送出申請</button>
   </div>
 </div>
+ 
+<!-- ╔═ 【新增】遊客登入 / 註冊 Modal ═╗ -->
+<div class="modal-overlay" id="visitorLoginModal">
+  <div class="modal">
+    <button class="modal-close" id="closeVisitorLogin">✕</button>
+    <!-- Tab 切換 -->
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="login">登入</button>
+      <button class="modal-tab" data-tab="register">註冊</button>
+    </div>
+    <!-- 登入表單 -->
+    <div id="visitorLoginForm">
+      <h2 class="modal-title">會員登入</h2>
+      <p class="modal-sub">登入後才能完成下單</p>
+      <div class="form-group">
+        <label>帳號</label>
+        <input type="text" id="vLoginAccount" placeholder="輸入帳號" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="vLoginPassword" placeholder="輸入密碼">
+      </div>
+      <div class="form-error" id="vLoginError"></div>
+      <button class="btn btn-primary btn-full" id="submitVisitorLogin">登入並下單</button>
+      <p class="modal-hint">測試帳號：visitor1 ／ 密碼：1234</p>
+    </div>
+    <!-- 註冊表單 -->
+    <div id="visitorRegisterForm" style="display:none">
+      <h2 class="modal-title">建立帳號</h2>
+      <p class="modal-sub">填寫資料完成註冊</p>
+      <div class="form-group">
+        <label>帳號</label>
+        <input type="text" id="vRegAccount" placeholder="設定帳號" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="vRegPassword" placeholder="設定密碼">
+      </div>
+      <div class="form-error" id="vRegError"></div>
+      <button class="btn btn-primary btn-full" id="submitVisitorRegister">註冊並下單</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ╔═ 【新增】攤位商品 / 購物車 Modal ═╗ -->
+<div class="modal-overlay" id="stallProductModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" id="closeStallProduct">✕</button>
+    <h2 class="modal-title" id="stallProductTitle">攤位商品</h2>
+    <p class="modal-sub" id="stallProductZone"></p>
+ 
+    <!-- 商品列表 -->
+    <div id="productList" class="product-list"></div>
+ 
+    <!-- 購物車 -->
+    <div class="cart-section">
+      <h3 class="cart-title">🛒 購物車</h3>
+      <div id="cartItems" class="cart-items">
+        <p class="cart-empty">尚未選擇任何商品</p>
+      </div>
+      <div class="cart-total">
+        合計：<span id="cartTotal">$0</span>
+      </div>
+    </div>
+ 
+    <div class="form-error" id="orderError"></div>
+    <button class="btn btn-primary btn-full" id="submitOrder">確認下單</button>
+  </div>
+</div>
+ 
+<!-- ╔═ 【新增】遊客訂單查詢 Modal ═╗ -->
+<div class="modal-overlay" id="myOrdersModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" id="closeMyOrders">✕</button>
+    <h2 class="modal-title">我的訂單</h2>
+    <div id="myOrdersList" class="orders-list">
+      <p class="loading-text">載入中...</p>
+    </div>
+  </div>
+</div>
+ 
+<!-- ╔═ 【新增】攤主訂單管理 Modal ═╗ -->
+<div class="modal-overlay" id="vendorOrdersModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" id="closeVendorOrders">✕</button>
+    <h2 class="modal-title">訂單管理</h2>
+    <div id="vendorOrdersList" class="orders-list">
+      <p class="loading-text">載入中...</p>
+    </div>
+  </div>
+</div>
+ 
+ 
+<!-- ╔═ 遊客浮動訂單按鈕（右下角）═╗ -->
+<div id="visitorFab" class="visitor-fab" style="display:none">
+  <button id="fabOrderBtn" class="fab-btn" title="查看我的訂單">
+    <span class="fab-icon">🧾</span>
+    <span id="fabBadge" class="fab-badge" style="display:none">0</span>
+  </button>
+</div>
+ 
+<!-- ╔═ 攤主商品管理 Modal ═╗ -->
+<div class="modal-overlay" id="productMgmtModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" id="closeProductMgmt">✕</button>
+    <h2 class="modal-title">管理商品</h2>
+    <p class="modal-sub" id="productMgmtStallName"></p>
+ 
+    <!-- 新增商品表單 -->
+    <div class="add-product-form">
+      <div class="form-row">
+        <div class="form-group" style="flex:2">
+          <label>商品名稱</label>
+          <input type="text" id="newProductName" placeholder="例：珍珠奶茶">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>價格（$）</label>
+          <input type="number" id="newProductPrice" placeholder="60" min="0">
+        </div>
+        <button class="btn btn-primary" id="addProductBtn" style="align-self:flex-end">新增</button>
+      </div>
+      <div class="form-error" id="productError"></div>
+    </div>
+ 
+    <!-- 商品列表 -->
+    <div id="productMgmtList" class="product-mgmt-list">
+      <p class="loading-text">載入中...</p>
+    </div>
+  </div>
+</div>
+
 
 <!-- ══ 地圖區塊 ══════════════════════════════════════════════ -->
 {% if role == 'visitor' %}
