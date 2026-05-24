@@ -392,48 +392,6 @@ def market_info():
             'today_orders': today_orders,
         }
     })
-# ── 市集資訊 ──────────────────────────────────────────────────
-
-@app.route('/market/info')
-def market_info():
-    today = datetime.now().strftime('%Y-%m-%d')
-
-    active_event = Event.query.filter(
-        Event.start_date <= today,
-        Event.end_date   >= today
-    ).first()
-
-    next_event = Event.query.filter(
-        Event.start_date > today
-    ).order_by(Event.start_date.asc()).first()
-
-    today_orders = Order.query.filter(
-        Order.order_time.like(today + '%')
-    ).count()
-
-    active_stalls = Stall.query.filter_by(status='active').all()
-    total_queue   = sum(
-        QueueTicket.query.filter_by(stall_id=s.stall_id, status='waiting').count()
-        for s in active_stalls
-    )
-
-    return jsonify({
-        'active_event': {
-            'event_name': active_event.event_name,
-            'start_date': active_event.start_date,
-            'end_date':   active_event.end_date,
-        } if active_event else None,
-        'next_event': {
-            'event_name': next_event.event_name,
-            'start_date': next_event.start_date,
-            'end_date':   next_event.end_date,
-        } if next_event else None,
-        'stats': {
-            'stall_count':  len(active_stalls),
-            'total_queue':  total_queue,
-            'today_orders': today_orders,
-        }
-    })
 
 # ── Event 管理（簡易 admin，實際上線建議加密碼保護）────────────
 
