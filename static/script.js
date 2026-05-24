@@ -42,10 +42,17 @@ $(function () {
 
   /* ══ 登入 Modal ═════════════════════════════════════════════ */
 
-  $('#loginBtn').on('click', function () {
-    openModal('#loginModal');
-    $('#inputUsername').trigger('focus');
-  });
+  // 會員登入按鈕
+$('#loginBtn').on('click', function () {
+  openModal('#visitorLoginModal');
+  $('#vLoginAccount').trigger('focus');
+});
+
+// 攤主登入按鈕
+$('#vendorLoginTrigger').on('click', function () {
+  openModal('#loginModal');
+  $('#inputUsername').trigger('focus');
+});
 
   $('#closeModal').on('click', () => closeModal('#loginModal'));
   $('#loginModal').on('click', function (e) {
@@ -109,7 +116,7 @@ $(function () {
     $("#overlayLogout").show();
   });
 
-  $("#closeLogout, #overlayLogout").click(function () {
+  $("#closeLogout, #closeLogout2, #overlayLogout").click(function () {
     $("#logoutPage").removeClass("show");
     $("#overlayLogout").hide();
   });
@@ -879,3 +886,185 @@ $('.hero-actions .btn-secondary').on('click', scrollToMap);
 $('.sidebar-actions .action-btn').filter(function () {
   return $(this).text().includes('查看地圖');
 }).on('click', scrollToMap);
+
+/* ══ Hero 市集資訊卡 ════════════════════════════════════════ */
+(function initMarketCard() {
+
+  let countdownInterval = null;
+
+  function updateCountdown(targetDateStr) {
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    function tick() {
+      const diff = new Date(targetDateStr) - new Date();
+      if (diff <= 0) {
+        $('#countdownRow').html('<span style="color:var(--green);font-size:0.9rem">🎉 市集開始了！</span>');
+        clearInterval(countdownInterval);
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      $('#cdDays').text(String(d).padStart(2,'0'));
+      $('#cdHours').text(String(h).padStart(2,'0'));
+      $('#cdMins').text(String(m).padStart(2,'0'));
+    }
+    tick();
+    countdownInterval = setInterval(tick, 30000);
+  }
+
+  $.get('/market/info', function(data) {
+
+    // ── 活躍市集狀態 ──
+    if (data.active_event) {
+      const e = data.active_event;
+      $('#marketStatusLabel').text('市集進行中：' + e.event_name);
+      $('#marketStatusTime').text(e.start_date + ' ～ ' + e.end_date);
+      $('.status-dot').removeClass('inactive').addClass('active');
+      // 有市集就隱藏倒數區塊
+      $('.market-next').hide();
+    } else {
+      $('#marketStatusLabel').text('目前無市集');
+      $('#marketStatusTime').text('');
+      $('.status-dot').removeClass('active').addClass('inactive');
+
+      // ── 下一場市集倒數 ──
+      if (data.next_event) {
+        const n = data.next_event;
+        const d = n.start_date; // 'YYYY-MM-DD'
+        const formatted = d.replace(/-/g, ' / ');
+        // 加上星期幾
+        const weekDay = ['日','一','二','三','四','五','六'][new Date(d).getDay()];
+        $('#nextMarketDate').text(formatted + '（' + weekDay + '）');
+        updateCountdown(d + 'T00:00:00');
+        $('.market-next').show();
+      } else {
+        $('.market-next').hide();
+      }
+    }
+
+    // ── 統計數字 ──
+    const s = data.stats;
+    $('#statStalls').text(s.stall_count);
+    $('#statQueue').text(s.total_queue);
+    $('#statOrders').text(s.today_orders);
+
+  }).fail(function() {
+    $('#marketStatusLabel').text('資料載入失敗');
+    $('.status-dot').removeClass('active').addClass('inactive');
+  });
+
+  // ── 熱門攤位 mini list（沿用 /stalls）──
+  $.get('/stalls', function(data) {
+    const stalls = data.stalls || [];
+    const top3   = stalls.slice(0, 3); // 已按 queue_count 降序排列
+
+    if (top3.length === 0) {
+      $('#miniStallList').html('<p style="font-size:0.8rem;color:var(--text-muted)">目前無攤位資料</p>');
+      return;
+    }
+    $('#miniStallList').empty();
+    top3.forEach(function(s, i) {
+      const cls = s.queue_count <= 5 ? 'green' : s.queue_count <= 15 ? 'yellow' : 'red';
+      const dot = s.queue_count <= 5 ? '🟢' : s.queue_count <= 15 ? '🟡' : '🔴';
+      $('#miniStallList').append(`
+        <div class="mini-stall-row">
+          <span class="mini-stall-name">${i+1}. ${s.stall_name}</span>
+          <span class="mini-stall-queue queue-badge ${cls}">${dot} ${s.queue_count} 人</span>
+        </div>
+      `);
+    });
+  }).fail(function() {
+    $('#miniStallList').html('<p style="font-size:0.8rem;color:var(--text-muted)">資料載入失敗</p>');
+  });
+
+})();
+/* ══ Event 管理 Modal ═══════════════════════════════════════ */
+$('#eventMgmtBtn').on('click', function () {
+  openModal('#eventMgmtModal');
+  loadEvents();
+});
+
+$('#closeEventMgmt').on('click', () => closeModal('#eventMgmtModal'));
+$('#eventMgmtModal').on('click', function (e) {
+  if ($(e.target).is('#eventMgmtModal')) closeModal('#eventMgmtModal');
+});
+
+function loadEvents() {
+  $('#eventMgmtList').html('<p class="loading-text">載入中...</p>');
+  const today = new Date().toISOString().slice(0, 10);
+
+  $.get('/admin/events', function (data) {
+    if (data.events.length === 0) {
+      $('#eventMgmtList').html('<p class="loading-text">尚無活動，請新增</p>');
+      return;
+    }
+    const $list = $('<div class="event-mgmt-list">');
+    data.events.forEach(function (e) {
+      let tag, cls;
+      if (e.start_date <= today && today <= e.end_date) {
+        tag = '進行中'; cls = 'active is-active';
+      } else if (e.start_date > today) {
+        tag = '即將開始'; cls = 'next is-next';
+      } else {
+        tag = '已結束'; cls = 'past';
+      }
+
+      $list.append(`
+        <div class="event-mgmt-item ${cls}" data-event-id="${e.event_id}">
+          <span class="event-name-badge">${e.event_name}</span>
+          <span class="event-date-range">${e.start_date} ～ ${e.end_date}</span>
+          <span class="event-tag ${cls.split(' ')[0]}">${tag}</span>
+          <button class="btn-delete event-delete-btn" data-id="${e.event_id}">刪除</button>
+        </div>
+      `);
+    });
+    $('#eventMgmtList').html($list);
+  }).fail(function () {
+    $('#eventMgmtList').html('<p class="loading-text">載入失敗</p>');
+  });
+}
+
+$('#addEventBtn').on('click', function () {
+  const name  = $('#newEventName').val().trim();
+  const start = $('#newEventStart').val();
+  const end   = $('#newEventEnd').val();
+  $('#eventError').text('');
+
+  if (!name)  { $('#eventError').text('請填寫活動名稱'); return; }
+  if (!start) { $('#eventError').text('請選擇開始日期'); return; }
+  if (!end)   { $('#eventError').text('請選擇結束日期'); return; }
+
+  $('#addEventBtn').text('新增中...').prop('disabled', true);
+  $.ajax({
+    url: '/admin/events', method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ event_name: name, start_date: start, end_date: end }),
+    success: function (data) {
+      if (data.success) {
+        showToast('活動已新增！');
+        $('#newEventName, #newEventStart, #newEventEnd').val('');
+        loadEvents();
+      } else {
+        $('#eventError').text(data.message);
+      }
+      $('#addEventBtn').text('＋ 新增活動').prop('disabled', false);
+    },
+    error: function () {
+      $('#eventError').text('網路錯誤，請稍後再試');
+      $('#addEventBtn').text('＋ 新增活動').prop('disabled', false);
+    }
+  });
+});
+
+$(document).on('click', '.event-delete-btn', function () {
+  if (!confirm('確定刪除此活動？')) return;
+  const id = $(this).data('id');
+  $.ajax({
+    url: '/admin/events/' + id, method: 'DELETE',
+    success: function (data) {
+      if (data.success) { showToast('活動已刪除', 'info'); loadEvents(); }
+      else showToast('刪除失敗', 'error');
+    }
+  });
+});
