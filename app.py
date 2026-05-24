@@ -347,6 +347,142 @@ def update_order_status(order_id):
         return jsonify({'success': True, 'status': order.status})
     return jsonify({'success': False, 'message': f'無法從 {order.status} 改為 {new_st}'})
 
+@app.route('/market/info')
+def market_info():
+    today = datetime.now().strftime('%Y-%m-%d')
+    now   = datetime.now()
+
+    # 找今天正在進行的 event
+    active_event = Event.query.filter(
+        Event.start_date <= today,
+        Event.end_date   >= today
+    ).first()
+
+    # 找下一場 event（未來最近的）
+    next_event = Event.query.filter(
+        Event.start_date > today
+    ).order_by(Event.start_date.asc()).first()
+
+    # 今日訂單數
+    today_orders = Order.query.filter(
+        Order.order_time.like(today + '%')
+    ).count()
+
+    # 活躍攤位數 & 總排隊人數
+    active_stalls = Stall.query.filter_by(status='active').all()
+    total_queue   = sum(
+        QueueTicket.query.filter_by(stall_id=s.stall_id, status='waiting').count()
+        for s in active_stalls
+    )
+
+    return jsonify({
+        'active_event': {
+            'event_name': active_event.event_name,
+            'start_date': active_event.start_date,
+            'end_date':   active_event.end_date,
+        } if active_event else None,
+        'next_event': {
+            'event_name': next_event.event_name,
+            'start_date': next_event.start_date,
+            'end_date':   next_event.end_date,
+        } if next_event else None,
+        'stats': {
+            'stall_count':  len(active_stalls),
+            'total_queue':  total_queue,
+            'today_orders': today_orders,
+        }
+    })
+# ── 市集資訊 ──────────────────────────────────────────────────
+
+@app.route('/market/info')
+def market_info():
+    today = datetime.now().strftime('%Y-%m-%d')
+
+    active_event = Event.query.filter(
+        Event.start_date <= today,
+        Event.end_date   >= today
+    ).first()
+
+    next_event = Event.query.filter(
+        Event.start_date > today
+    ).order_by(Event.start_date.asc()).first()
+
+    today_orders = Order.query.filter(
+        Order.order_time.like(today + '%')
+    ).count()
+
+    active_stalls = Stall.query.filter_by(status='active').all()
+    total_queue   = sum(
+        QueueTicket.query.filter_by(stall_id=s.stall_id, status='waiting').count()
+        for s in active_stalls
+    )
+
+    return jsonify({
+        'active_event': {
+            'event_name': active_event.event_name,
+            'start_date': active_event.start_date,
+            'end_date':   active_event.end_date,
+        } if active_event else None,
+        'next_event': {
+            'event_name': next_event.event_name,
+            'start_date': next_event.start_date,
+            'end_date':   next_event.end_date,
+        } if next_event else None,
+        'stats': {
+            'stall_count':  len(active_stalls),
+            'total_queue':  total_queue,
+            'today_orders': today_orders,
+        }
+    })
+
+# ── Event 管理（簡易 admin，實際上線建議加密碼保護）────────────
+
+@app.route('/admin/events', methods=['GET'])
+def admin_events():
+    events = Event.query.order_by(Event.start_date.desc()).all()
+    return jsonify({'events': [{
+        'event_id':   e.event_id,
+        'event_name': e.event_name,
+        'start_date': e.start_date,
+        'end_date':   e.end_date,
+    } for e in events]})
+
+@app.route('/admin/events', methods=['POST'])
+def admin_create_event():
+    data = request.get_json()
+    name  = data.get('event_name', '').strip()
+    start = data.get('start_date', '').strip()
+    end   = data.get('end_date', '').strip()
+    if not name or not start or not end:
+        return jsonify({'success': False, 'message': '請填寫所有欄位'})
+    if start > end:
+        return jsonify({'success': False, 'message': '結束日期不能早於開始日期'})
+    e = Event(event_name=name, start_date=start, end_date=end)
+    db.session.add(e)
+    db.session.commit()
+    return jsonify({'success': True, 'event': {
+        'event_id': e.event_id, 'event_name': e.event_name,
+        'start_date': e.start_date, 'end_date': e.end_date
+    }})
+
+@app.route('/admin/events/<event_id>', methods=['PATCH'])
+def admin_update_event(event_id):
+    e    = Event.query.get_or_404(event_id)
+    data = request.get_json()
+    if 'event_name' in data: e.event_name = data['event_name'].strip()
+    if 'start_date' in data: e.start_date = data['start_date'].strip()
+    if 'end_date'   in data: e.end_date   = data['end_date'].strip()
+    if e.start_date > e.end_date:
+        return jsonify({'success': False, 'message': '結束日期不能早於開始日期'})
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/admin/events/<event_id>', methods=['DELETE'])
+def admin_delete_event(event_id):
+    e = Event.query.get_or_404(event_id)
+    db.session.delete(e)
+    db.session.commit()
+    return jsonify({'success': True})
 # ══════════════════════════════════════════════════════════════
 if __name__ == '__main__':
     with app.app_context():
