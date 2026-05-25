@@ -2,7 +2,8 @@
 from flask import Blueprint, request, jsonify, session
 
 # 從上一層 (..) 的 app.py 匯入資料庫實體與你需要用到的 Models
-from app import db, Event, Visitor, QueueTicket, visitor_required
+#from app import db, Event, Visitor, QueueTicket, visitor_required
+from __main__ import db, Event, Visitor, QueueTicket, visitor_required
 
 # 1. 宣告這是一張名為 'weiyong' 的藍圖 (Blueprint)
 weiyong_bp = Blueprint('weiyong', __name__)
