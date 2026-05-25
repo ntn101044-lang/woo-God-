@@ -286,17 +286,33 @@ $('#vendorLoginTrigger').on('click', function () {
     if (account) {
       $('#visitorAccount').text('👤 ' + account);
       $('#visitorInfo').show();
-      $('#visitorLoginBtn').hide();
-      // ╔═ 【新增】登入後顯示 FAB 並更新 badge ═╗
+      
+      // 🎯 關鍵修正：遊客登入後，同時隱藏「會員登入」與「攤主登入」按鈕！
+      $('#loginBtn').hide();
+      $('#vendorLoginTrigger').hide(); 
+
+      // 顯示 FAB 並更新 badge
       $('#visitorFab').show();
       updateFabBadge();
     } else {
       $('#visitorInfo').hide();
-      $('#visitorLoginBtn').show();
-      // ╔═ 【新增】登出後隱藏 FAB ═╗
+      
+      // 🎯 關鍵修正：如果是未登出/未登入狀態，要把兩個按鈕都秀回來
+      $('#loginBtn').show();
+      $('#vendorLoginTrigger').show();
+
+      // 隱藏 FAB
       $('#visitorFab').hide();
     }
   }
+
+  // 會員登出按鈕點擊事件
+  $(document).on('click', '#visitorLogoutBtn', function () {
+    if (confirm('確定要登出會員嗎？')) {
+      // 呼叫後端的遊客登出路由 (對齊你們 app.py 的設計)
+      window.location.href = "/visitor/logout"; 
+    }
+  });
 
   // 頁面載入時檢查遊客 session
   function checkVisitorSession() {

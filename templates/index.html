@@ -57,16 +57,25 @@
     <span id="openSidebar" class="logo-icon menu-btn">⛩</span>
     <span class="brand-name">Woo~God</span>
   </div>
-  <div class="nav-right">
+<div class="nav-right">
+  <!-- 👤 狀況 A：當前角色是遊客 (Visitor) -->
   {% if role == 'visitor' %}
-  <button class="btn btn-outline" id="loginBtn">會員登入</button>
-  <button class="btn-vendor-login" id="vendorLoginTrigger">攤主登入</button>
+    <!-- ╔═ 【補齊】遊客登入後要顯示的帳號與登出按鈕 ═╗ -->
+    <div id="visitorInfo" style="display: none; align-items: center; gap: 10px;">
+      <span id="visitorAccount" class="vendor-badge">👤 載入中...</span>
+      <button class="btn btn-ghost" id="visitorLogoutBtn">登出</button>
+    </div>
 
+    <!-- 未登入時顯示的按鈕 -->
+    <button class="btn btn-outline" id="loginBtn">會員登入</button>
+    <button class="btn-vendor-login" id="vendorLoginTrigger">攤主登入</button>
+
+  <!-- 🏪 狀況 B：當前角色是攤主 (Vendor) -->
   {% elif role == 'vendor' %}
-  <span class="vendor-badge">👤 {{ vendor_name }}</span>
-  <button class="btn btn-ghost" id="myStallBtn">我的攤位</button>
-  <button class="btn btn-ghost" id="eventMgmtBtn">🗓 管理活動</button>
-  <button class="btn-vendor-login" id="logoutBtn">登出</button>
+    <span class="vendor-badge">👤 {{ vendor_name }}</span>
+    <button class="btn btn-ghost" id="myStallBtn">我的攤位</button>
+    <button class="btn btn-ghost" id="eventMgmtBtn">🗓 管理活動</button>
+    <button class="btn-vendor-login" id="logoutBtn">登出</button>
   {% endif %}
 </div>
 </nav>
