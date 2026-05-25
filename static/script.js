@@ -97,16 +97,30 @@ $('#vendorLoginTrigger').on('click', function () {
     });
   }
 
-  /* ══ 漢堡選單點擊 ════════════════════════════════════════════ */
+  /* ══ 漢堡選單點擊與四大核心跳轉 ════════════════════════════════ */
   $("#openSidebar").click(function () {
     $("#sidebar").addClass("show");
-    // ╔═ 【修正】原本用 #overlaySideber（拼錯），改為 #overlay 對應 HTML ═╗
-    $("#overlaySideber").show();
+    $("#overlaySideber").show(); // 🎯 修正拼字：確保對應 HTML 裡的 id="overlaySideber"
   });
 
-  $("#closeSidebar, #overlay").click(function () {
+  // 點擊關閉按鈕或遮罩時隱藏側邊欄
+  $("#closeSidebar, #overlaySideber").click(function () {
     $("#sidebar").removeClass("show");
-    // ╔═ 【修正】同上 ═╗
+    $("#overlaySideber").hide();
+  });
+
+  // 💡 【全新優化】控制四大功能點擊後的平滑滾動跳轉
+  $(".sidebar-menu .menu-item").on('click', function (e) {
+    e.preventDefault(); 
+    const targetId = $(this).attr('href'); 
+    const $target = $(targetId);
+
+    if ($target.length) {
+      $('html, body').animate({ scrollTop: $target.offset().top - 150 }, 500);
+    }
+
+    // 跳轉完成後收起側邊欄
+    $("#sidebar").removeClass("show");
     $("#overlaySideber").hide();
   });
 
@@ -874,19 +888,12 @@ loadStallSections();
 function scrollToMap() {
   const $map = $('#mapSection');
   if ($map.length) {
-    // ╔═ 【修正】原本用原生 sidebar / overlaySideber 變數會報錯，改為 jQuery ═╗
-    $('html, body').animate({ scrollTop: $map.offset().top - 80 }, 500);
+    // 🎯 這裡也同步改成 - 120 喔！
+    $('html, body').animate({ scrollTop: $map.offset().top - 50 }, 500);
   }
   $('#sidebar').removeClass('show');
-  $('#overlay').hide();
+  $("#overlaySideber").hide(); // 順手把剛剛說的 overlay 蟲修正好
 }
-
-$('.hero-actions .btn-secondary').on('click', scrollToMap);
-
-$('.sidebar-actions .action-btn').filter(function () {
-  return $(this).text().includes('查看地圖');
-}).on('click', scrollToMap);
-
 /* ══ Hero 市集資訊卡 ════════════════════════════════════════ */
 (function initMarketCard() {
 
