@@ -165,10 +165,30 @@ def vendor_logout():
     session.clear()
     return redirect(url_for('index'))
 
-@app.route('/vendor/stall', methods=['GET', 'POST'])
+@app.route('/vendor/stall', methods=['GET', 'POST', 'DELETE']) # 🎯 1. 加上 DELETE 允許
 @vendor_required
 def vendor_stall():
     vendor_id = session['vendor_id']
+    
+    # 🚨 2. 全新追加：處理前端發射過來的 DELETE 刪除攤位請求
+    if request.method == 'DELETE':
+        stall = Stall.query.filter_by(vendor_id=vendor_id).first()
+        if not stall:
+            return jsonify({'success': False, 'message': '找不到您的攤位資料'})
+        
+        try:
+            # 🎯 核心連鎖反應：手動把該攤位的所有商品從關聯中移除/刪除
+            # 因為你們是用多對多 offers 關聯，這裡直接將商品關聯清空
+            stall.products.clear() 
+            
+            # 🎯 把攤位本身從資料庫中抹除
+            db.session.delete(stall)
+            db.session.commit()
+            return jsonify({'success': True, 'message': '攤位與關聯商品已成功刪除！'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': f'資料庫錯誤: {str(e)}'})
+        
     if request.method == 'POST':
         data     = request.get_json()
         existing = Stall.query.filter_by(vendor_id=vendor_id).first()
