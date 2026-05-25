@@ -219,9 +219,10 @@
   <div class="panel-grid">
     <div class="panel-card" id="setupStallCard">
       <div class="panel-icon">🏪</div>
-      <h3>設立攤位</h3>
-      <p>填寫攤位資訊，送審後即可開始營業</p>
-      <button class="btn btn-primary" id="openStallForm">建立攤位</button>
+      <h3 id="stallCardTitle">設立攤位</h3>
+      <p id="stallCardDesc">填寫攤位資訊，送審後即可開始營業</p>
+      <div id="stallCardActionBtnContainer" style="width: 100%;">
+      <button class="btn btn-primary btn-full" id="openStallForm">建立攤位</button></div>
     </div>
     <div class="panel-card">
       <div class="panel-icon">📦</div>
@@ -262,6 +263,22 @@
 </div>
 </section>
 {% endif %}
+
+<!-- ╔═ 【全新追加】管理攤位 Modal ═╗ -->
+<div class="modal-overlay" id="manageStallModal">
+  <div class="modal">
+    <button class="modal-close" id="closeManageStall">✕</button>
+    <h2 class="modal-title">管理我的攤位</h2>
+    <p class="modal-sub">您可以進行攤位維護或關閉攤位</p>
+    
+    <div style="margin: 2rem 0; text-align: center;">
+      <p style="color: var(--text-muted); font-size: 0.9rem; mb: 1rem;">若不需要營業，您可以選擇將攤位徹底刪除。</p>
+    </div>
+
+    <!-- 🚨 刪除按鈕 -->
+    <button class="btn btn-full" id="deleteStallBtn" style="background-color: #e85b47; color: white;">❌ 刪除我的攤位</button>
+  </div>
+</div>
 
 <!-- ════════════════════════════════════════════════════════════
      MODALS
@@ -449,9 +466,22 @@
   <div class="section-header">
     <h2>📍 市集地圖</h2>
   </div>
+  <div class="map-card">
+
+  <div class="map-topbar">
+    <div>
+      <p class="map-label">Market Navigation</p>
+    </div>
+    <button class="map-full-btn">
+      🔍 查看完整地圖
+    </button>
+  </div>
+
   <div class="map-placeholder">
     <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖">
   </div>
+
+</div>
 </section>
 
 {% endif %}

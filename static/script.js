@@ -19,9 +19,9 @@ $(function () {
     setTimeout(() => $toast.animate({ opacity: 0 }, 300, () => $toast.remove()), 3000);
   }
 
-  function openModal(id)  { $(id).addClass('open'); }
-  function closeModal(id) { $(id).removeClass('open'); }
-
+  window.openModal = function(id) { $(id).addClass('open'); };
+  window.closeModal = function(id) { $(id).removeClass('open'); };
+  
   // 訂單狀態中文對照
   const STATUS_LABEL = {
     placed:      '已下單',
@@ -1091,3 +1091,86 @@ $(document).on('click', '.event-delete-btn', function () {
     }
   });
 });
+
+/* ══ 🎯 【全新追加】管理/刪除攤位核心邏輯 ═════════════════════════ */
+
+  // 1. 頁面載入時，動態檢查攤主是否有攤位，並切換按鈕
+  function checkVendorStallStatus() {
+    // 借用你們既有的這個 API 來判斷攤主狀態
+    $.get('/vendor/products', function (data) {
+      if (data.has_stall) {
+        // 如果已經有攤位了，立刻將「建立」魔改成「管理」
+        $('#stallCardTitle').text('管理攤位');
+        $('#stallCardDesc').text('修改攤位基本資訊，或進行結束營業刪除。');
+        $('#stallCardActionBtnContainer').html(
+          '<button class="btn btn-primary btn-full" id="openManageStallBtn">管理攤位</button>'
+        );
+      }
+    });
+  }
+  // 如果畫面上有攤主面板，就啟動檢查
+  if ($('.vendor-panel').length) checkVendorStallStatus();
+
+// 2. 控制「管理攤位」Modal 的開關（🎯 補齊開啟、✕ 按鈕、與遮罩關閉邏輯）
+  $(document).on('click', '#openManageStallBtn', function () {
+    openModal('#manageStallModal');
+  });
+  
+  // 📢 【全新補上】點擊 ✕ 按鈕時，要乖乖關閉管理視窗
+  $(document).on('click', '#closeManageStall', function () {
+    closeModal('#manageStallModal');
+  });
+
+  // 📢 【全新補上】點擊視窗外的半透明遮罩時，也要自動關閉
+  $(document).on('click', '#manageStallModal', function (e) {
+    if ($(e.target).is('#manageStallModal')) closeModal('#manageStallModal');
+  });
+
+  // 3. 🚨 核心功能：刪除攤位（含二次高強度提醒防誤觸）
+  $(document).on('click', '#deleteStallBtn', function () {
+    // 第一次提醒
+    if (confirm('⚠️ 警告：確定要刪除您的攤位嗎？此動作將會清除所有攤位資訊！')) {
+      // 第二次終極提醒
+      if (confirm('🛑 這是最後確認！刪除後連同您的「商品資料」也將一併消失，真的要刪除嗎？')) {
+        
+        // 兩關都通過了，正式發射 DELETE 請求給後端
+        $.ajax({
+          url: '/vendor/stall',
+          method: 'DELETE',
+          success: function (data) {
+            if (data.success) {
+              // 1. 關閉管理視窗
+              closeModal('#manageStallModal'); // 請對齊你原本關彈窗的 id
+              
+              // 2. 跳出成功通知（如果你們有寫 Toast 的話，沒有的話可以刪掉這行）
+              if (typeof showToast === "function") {
+                showToast('攤位已成功刪除！', 'info');
+              } else {
+                alert('攤位已成功刪除！');
+              }
+              
+              // 🎯 3. 關鍵大絕招：延遲半秒後，強制全網頁重新整理！
+              // 網頁一刷新，就會重新呼叫 checkVendorStallStatus() ➔ 發現沒攤位 ➔ 按鈕一秒變回「建立攤位」
+              setTimeout(function() {
+                window.location.reload(true); // true 代表強制跟伺服器抓最新資料，不吃瀏覽器快取
+              }, 500);
+
+            } else {
+              alert(data.message || '刪除失敗，請稍後再試');
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("🚨 刪除請求失敗:", error);
+            alert("伺服器發生錯誤，請檢查主控台");
+          }
+        });
+
+      }
+    }
+  });
+
+  // 4. 別忘了順手把新 Modal 加進 ESC 鍵關閉清單裡
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape') closeModal('#manageStallModal');
+  });
+
