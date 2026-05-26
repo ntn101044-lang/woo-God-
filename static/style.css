@@ -111,7 +111,7 @@ body {
   background: rgba(171, 167, 167, 0.12);
   border-bottom: 1px solid rgba(0,0,0,0.08);
   flex-shrink: 0;
-   backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 .logo-text {
@@ -208,6 +208,7 @@ body {
   text-decoration: none;
   font-weight: 500;
   transition: all 0.15s ease;
+  animation: none;
 }
 .menu-item:hover {
   background: rgba(255,255,255,0.3);

@@ -73,7 +73,6 @@
   <!-- 🏪 狀況 B：當前角色是攤主 (Vendor) -->
   {% elif role == 'vendor' %}
     <span class="vendor-badge">👤 {{ vendor_name }}</span>
-    <button class="btn btn-ghost" id="myStallBtn">我的攤位</button>
     <button class="btn btn-ghost" id="eventMgmtBtn">🗓 管理活動</button>
     <button class="btn-vendor-login" id="logoutBtn">登出</button>
   {% endif %}
@@ -352,7 +351,7 @@
       </div>
       <div class="form-error" id="vLoginError"></div>
       <button class="btn btn-primary btn-full" id="submitVisitorLogin">登入並下單</button>
-      <p class="modal-hint">測試帳號：visitor1 ／ 密碼：1234</p>
+      <p class="modal-hint">測試帳號：user01@example.com/user02@example.com ／ 密碼：password123/password456</p>
     </div>
     <!-- 註冊表單 -->
     <div id="visitorRegisterForm" style="display:none">
