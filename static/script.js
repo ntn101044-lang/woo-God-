@@ -584,7 +584,7 @@ $(function () {
         $('#myOrdersList').html('<p class="loading-text">目前沒有訂單</p>');
         return;
       }
-      const $list = $('<div>');
+      const $list = $('<div style="display:flex; flex-direction:column; gap:20px; padding:4px 2px;">');
       data.orders.forEach(function (o) {
         $list.append(buildOrderCard(o, 'visitor'));
       });
@@ -628,7 +628,7 @@ $(function () {
         $('#vendorOrdersList').html('<p class="loading-text">目前沒有訂單</p>');
         return;
       }
-      const $list = $('<div>');
+      const $list = $('<div style="display:flex; flex-direction:column; gap:20px; padding:4px 2px;">');
       data.orders.forEach(function (o) {
         $list.append(buildOrderCard(o, 'vendor'));
       });
@@ -731,7 +731,7 @@ $(function () {
       : `🏪 ${o.stall_name}`;
 
     return $(`
-      <div class="order-card">
+      <div class="order-card" style="margin-bottom: 20px;">
         <div class="order-card-header">
           <div>
             <span class="order-id">#${shortId}</span>
