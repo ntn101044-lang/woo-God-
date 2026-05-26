@@ -262,6 +262,23 @@
 </div>
 </section>
 {% endif %}
+<div id="overlayVisitorLogout"></div>
+
+<div id="visitorLogoutPage">
+  <div style="display:flex; flex-direction:column; gap:1.2rem; width:100%;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;">確認登出</h2>
+      <button id="closeVisitorLogout" class="modal-close" style="position:static;">✕</button>
+    </div>
+    <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+      確定要登出會員帳號嗎？
+    </p>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:0.5rem;">
+      <button id="closeVisitorLogout2" class="btn btn-secondary">取消</button>
+      <button id="confirmVisitorLogout" class="btn-vendor-login">確認登出</button>
+    </div>
+  </div>
+</div>
 
 <!-- ╔═ 【全新追加】管理攤位 Modal ═╗ -->
 <div class="modal-overlay" id="manageStallModal">
@@ -283,26 +300,56 @@
      MODALS
      ════════════════════════════════════════════════════════════ -->
  
-<!-- ── 攤主登入 ────────────────────────────────────────────── -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal">
     <button class="modal-close" id="closeModal">✕</button>
-    <h2 class="modal-title">攤主登入</h2>
-    <p class="modal-sub">請使用您的攤主帳號登入</p>
-    <div class="form-group">
-      <label>帳號</label>
-      <input type="text" id="inputUsername" placeholder="輸入帳號" autocomplete="off">
+    
+    <div class="modal-tabs">
+      <button class="vendor-tab modal-tab active" data-tab="vdr-login">攤主登入</button>
+      <button class="vendor-tab modal-tab" data-tab="vdr-register">攤主註冊</button>
     </div>
-    <div class="form-group">
-      <label>密碼</label>
-      <input type="password" id="inputPassword" placeholder="輸入密碼">
+    
+    <div id="vendorLoginForm">
+      <h2 class="modal-title">攤主登入</h2>
+      <p class="modal-sub">登入後可管理攤位</p>
+      <div class="form-group">
+        <label>帳號</label>
+        <input type="text" id="inputUsername" placeholder="輸入帳號" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="inputPassword" placeholder="輸入密碼">
+      </div>
+      <div class="form-error" id="loginError"></div>
+      <button class="btn btn-primary btn-full" id="submitLoginBtn">登入</button>
+      <p class="modal-hint">測試帳號：vendor1 ／ 密碼：1234</p>
     </div>
-    <div class="form-error" id="loginError"></div>
-    <button class="btn btn-primary btn-full" id="submitLogin">登入</button>
-    <p class="modal-hint">測試帳號：vendor1 ／ 密碼：1234</p>
+
+    <div id="vendorRegisterForm" style="display:none;">
+      <h2 class="modal-title">建立攤主帳號</h2>
+      <p class="modal-sub">填寫資料完成註冊（登入後即可設立攤位）</p>
+      <div class="form-group">
+        <label>姓名</label>
+        <input type="text" id="vdrRegName" placeholder="例：阿婆米苔目 / 張小明" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>帳號</label>
+        <input type="text" id="vdrRegAccount" placeholder="設定登入帳號" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="vdrRegPassword" placeholder="設定密碼">
+      </div>
+      <div class="form-group">
+        <label>聯絡電話</label>
+        <input type="text" id="vdrRegPhone" placeholder="例：0912345678" autocomplete="off">
+      </div>
+      <div class="form-error" id="vdrRegError"></div>
+      <button class="btn btn-primary btn-full" id="submitVendorRegisterBtn">註冊並登入</button>
+    </div>
+
   </div>
 </div>
- 
 <!-- ── 建立攤位 ────────────────────────────────────────────── -->
 <div class="modal-overlay" id="stallModal">
   <div class="modal">
@@ -334,8 +381,8 @@
     <button class="modal-close" id="closeVisitorLogin">✕</button>
     <!-- Tab 切換 -->
     <div class="modal-tabs">
-      <button class="modal-tab active" data-tab="login">登入</button>
-      <button class="modal-tab" data-tab="register">註冊</button>
+      <button class="modal-tab active" data-tab="login">會員登入</button>
+      <button class="modal-tab" data-tab="register">會員註冊</button>
     </div>
     <!-- 登入表單 -->
     <div id="visitorLoginForm">
@@ -366,7 +413,7 @@
         <input type="password" id="vRegPassword" placeholder="設定密碼">
       </div>
       <div class="form-error" id="vRegError"></div>
-      <button class="btn btn-primary btn-full" id="submitVisitorRegister">註冊並下單</button>
+      <button class="btn btn-primary btn-full" id="submitVisitorRegister">註冊並登入</button>
     </div>
   </div>
 </div>
