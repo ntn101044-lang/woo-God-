@@ -19,9 +19,9 @@ $(function () {
     setTimeout(() => $toast.animate({ opacity: 0 }, 300, () => $toast.remove()), 3000);
   }
 
-  function openModal(id)  { $(id).addClass('open'); }
-  function closeModal(id) { $(id).removeClass('open'); }
-
+  window.openModal = function(id) { $(id).addClass('open'); };
+  window.closeModal = function(id) { $(id).removeClass('open'); };
+  
   // 訂單狀態中文對照
   const STATUS_LABEL = {
     placed:      '已下單',
@@ -42,10 +42,17 @@ $(function () {
 
   /* ══ 登入 Modal ═════════════════════════════════════════════ */
 
-  $('#loginBtn').on('click', function () {
-    openModal('#loginModal');
-    $('#inputUsername').trigger('focus');
-  });
+  // 會員登入按鈕
+$('#loginBtn').on('click', function () {
+  openModal('#visitorLoginModal');
+  $('#vLoginAccount').trigger('focus');
+});
+
+// 攤主登入按鈕
+$('#vendorLoginTrigger').on('click', function () {
+  openModal('#loginModal');
+  $('#inputUsername').trigger('focus');
+});
 
   $('#closeModal').on('click', () => closeModal('#loginModal'));
   $('#loginModal').on('click', function (e) {
@@ -90,16 +97,30 @@ $(function () {
     });
   }
 
-  /* ══ 漢堡選單點擊 ════════════════════════════════════════════ */
+  /* ══ 漢堡選單點擊與四大核心跳轉 ════════════════════════════════ */
   $("#openSidebar").click(function () {
     $("#sidebar").addClass("show");
-    // ╔═ 【修正】原本用 #overlaySideber（拼錯），改為 #overlay 對應 HTML ═╗
-    $("#overlaySideber").show();
+    $("#overlaySideber").show(); // 🎯 修正拼字：確保對應 HTML 裡的 id="overlaySideber"
   });
 
-  $("#closeSidebar, #overlay").click(function () {
+  // 點擊關閉按鈕或遮罩時隱藏側邊欄
+  $("#closeSidebar, #overlaySideber").click(function () {
     $("#sidebar").removeClass("show");
-    // ╔═ 【修正】同上 ═╗
+    $("#overlaySideber").hide();
+  });
+
+  // 💡 【全新優化】控制四大功能點擊後的平滑滾動跳轉
+  $(".sidebar-menu .menu-item").on('click', function (e) {
+    e.preventDefault(); 
+    const targetId = $(this).attr('href'); 
+    const $target = $(targetId);
+
+    if ($target.length) {
+      $('html, body').animate({ scrollTop: $target.offset().top - 150 }, 500);
+    }
+
+    // 跳轉完成後收起側邊欄
+    $("#sidebar").removeClass("show");
     $("#overlaySideber").hide();
   });
 
@@ -109,7 +130,7 @@ $(function () {
     $("#overlayLogout").show();
   });
 
-  $("#closeLogout, #overlayLogout").click(function () {
+  $("#closeLogout, #closeLogout2, #overlayLogout").click(function () {
     $("#logoutPage").removeClass("show");
     $("#overlayLogout").hide();
   });
@@ -265,17 +286,33 @@ $(function () {
     if (account) {
       $('#visitorAccount').text('👤 ' + account);
       $('#visitorInfo').show();
-      $('#visitorLoginBtn').hide();
-      // ╔═ 【新增】登入後顯示 FAB 並更新 badge ═╗
+      
+      // 🎯 關鍵修正：遊客登入後，同時隱藏「會員登入」與「攤主登入」按鈕！
+      $('#loginBtn').hide();
+      $('#vendorLoginTrigger').hide(); 
+
+      // 顯示 FAB 並更新 badge
       $('#visitorFab').show();
       updateFabBadge();
     } else {
       $('#visitorInfo').hide();
-      $('#visitorLoginBtn').show();
-      // ╔═ 【新增】登出後隱藏 FAB ═╗
+      
+      // 🎯 關鍵修正：如果是未登出/未登入狀態，要把兩個按鈕都秀回來
+      $('#loginBtn').show();
+      $('#vendorLoginTrigger').show();
+
+      // 隱藏 FAB
       $('#visitorFab').hide();
     }
   }
+
+  // 會員登出按鈕點擊事件
+  $(document).on('click', '#visitorLogoutBtn', function () {
+    if (confirm('確定要登出會員嗎？')) {
+      // 呼叫後端的遊客登出路由 (對齊你們 app.py 的設計)
+      window.location.href = "/visitor/logout"; 
+    }
+  });
 
   // 頁面載入時檢查遊客 session
   function checkVisitorSession() {
@@ -867,15 +904,273 @@ loadStallSections();
 function scrollToMap() {
   const $map = $('#mapSection');
   if ($map.length) {
-    // ╔═ 【修正】原本用原生 sidebar / overlaySideber 變數會報錯，改為 jQuery ═╗
-    $('html, body').animate({ scrollTop: $map.offset().top - 80 }, 500);
+    // 🎯 這裡也同步改成 - 120 喔！
+    $('html, body').animate({ scrollTop: $map.offset().top - 50 }, 500);
   }
   $('#sidebar').removeClass('show');
-  $('#overlay').hide();
+  $("#overlaySideber").hide(); // 順手把剛剛說的 overlay 蟲修正好
+}
+/* ══ Hero 市集資訊卡 ════════════════════════════════════════ */
+(function initMarketCard() {
+
+  let countdownInterval = null;
+
+  function updateCountdown(targetDateStr) {
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    function tick() {
+      const diff = new Date(targetDateStr) - new Date();
+      if (diff <= 0) {
+        $('#countdownRow').html('<span style="color:var(--green);font-size:0.9rem">🎉 市集開始了！</span>');
+        clearInterval(countdownInterval);
+        return;
+      }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      $('#cdDays').text(String(d).padStart(2,'0'));
+      $('#cdHours').text(String(h).padStart(2,'0'));
+      $('#cdMins').text(String(m).padStart(2,'0'));
+    }
+    tick();
+    countdownInterval = setInterval(tick, 30000);
+  }
+
+  $.get('/market/info', function(data) {
+
+    // ── 活躍市集狀態 ──
+    if (data.active_event) {
+      const e = data.active_event;
+      $('#marketStatusLabel').text('市集進行中：' + e.event_name);
+      $('#marketStatusTime').text(e.start_date + ' ～ ' + e.end_date);
+      $('.status-dot').removeClass('inactive').addClass('active');
+      // 有市集就隱藏倒數區塊
+      $('.market-next').hide();
+    } else {
+      $('#marketStatusLabel').text('目前無市集');
+      $('#marketStatusTime').text('');
+      $('.status-dot').removeClass('active').addClass('inactive');
+
+      // ── 下一場市集倒數 ──
+      if (data.next_event) {
+        const n = data.next_event;
+        const d = n.start_date; // 'YYYY-MM-DD'
+        const formatted = d.replace(/-/g, ' / ');
+        // 加上星期幾
+        const weekDay = ['日','一','二','三','四','五','六'][new Date(d).getDay()];
+        $('#nextMarketDate').text(formatted + '（' + weekDay + '）');
+        updateCountdown(d + 'T00:00:00');
+        $('.market-next').show();
+      } else {
+        $('.market-next').hide();
+      }
+    }
+
+    // ── 統計數字 ──
+    const s = data.stats;
+    $('#statStalls').text(s.stall_count);
+    $('#statQueue').text(s.total_queue);
+    $('#statOrders').text(s.today_orders);
+
+  }).fail(function() {
+    $('#marketStatusLabel').text('資料載入失敗');
+    $('.status-dot').removeClass('active').addClass('inactive');
+  });
+
+  // ── 熱門攤位 mini list（沿用 /stalls）──
+  $.get('/stalls', function(data) {
+    const stalls = data.stalls || [];
+    const top3   = stalls.slice(0, 3); // 已按 queue_count 降序排列
+
+    if (top3.length === 0) {
+      $('#miniStallList').html('<p style="font-size:0.8rem;color:var(--text-muted)">目前無攤位資料</p>');
+      return;
+    }
+    $('#miniStallList').empty();
+    top3.forEach(function(s, i) {
+      const cls = s.queue_count <= 5 ? 'green' : s.queue_count <= 15 ? 'yellow' : 'red';
+      const dot = s.queue_count <= 5 ? '🟢' : s.queue_count <= 15 ? '🟡' : '🔴';
+      $('#miniStallList').append(`
+        <div class="mini-stall-row">
+          <span class="mini-stall-name">${i+1}. ${s.stall_name}</span>
+          <span class="mini-stall-queue queue-badge ${cls}">${dot} ${s.queue_count} 人</span>
+        </div>
+      `);
+    });
+  }).fail(function() {
+    $('#miniStallList').html('<p style="font-size:0.8rem;color:var(--text-muted)">資料載入失敗</p>');
+  });
+
+})();
+/* ══ Event 管理 Modal ═══════════════════════════════════════ */
+$('#eventMgmtBtn').on('click', function () {
+  openModal('#eventMgmtModal');
+  loadEvents();
+});
+
+$('#closeEventMgmt').on('click', () => closeModal('#eventMgmtModal'));
+$('#eventMgmtModal').on('click', function (e) {
+  if ($(e.target).is('#eventMgmtModal')) closeModal('#eventMgmtModal');
+});
+
+function loadEvents() {
+  $('#eventMgmtList').html('<p class="loading-text">載入中...</p>');
+  const today = new Date().toISOString().slice(0, 10);
+
+  $.get('/admin/events', function (data) {
+    if (data.events.length === 0) {
+      $('#eventMgmtList').html('<p class="loading-text">尚無活動，請新增</p>');
+      return;
+    }
+    const $list = $('<div class="event-mgmt-list">');
+    data.events.forEach(function (e) {
+      let tag, cls;
+      if (e.start_date <= today && today <= e.end_date) {
+        tag = '進行中'; cls = 'active is-active';
+      } else if (e.start_date > today) {
+        tag = '即將開始'; cls = 'next is-next';
+      } else {
+        tag = '已結束'; cls = 'past';
+      }
+
+      $list.append(`
+        <div class="event-mgmt-item ${cls}" data-event-id="${e.event_id}">
+          <span class="event-name-badge">${e.event_name}</span>
+          <span class="event-date-range">${e.start_date} ～ ${e.end_date}</span>
+          <span class="event-tag ${cls.split(' ')[0]}">${tag}</span>
+          <button class="btn-delete event-delete-btn" data-id="${e.event_id}">刪除</button>
+        </div>
+      `);
+    });
+    $('#eventMgmtList').html($list);
+  }).fail(function () {
+    $('#eventMgmtList').html('<p class="loading-text">載入失敗</p>');
+  });
 }
 
-$('.hero-actions .btn-secondary').on('click', scrollToMap);
+$('#addEventBtn').on('click', function () {
+  const name  = $('#newEventName').val().trim();
+  const start = $('#newEventStart').val();
+  const end   = $('#newEventEnd').val();
+  $('#eventError').text('');
 
-$('.sidebar-actions .action-btn').filter(function () {
-  return $(this).text().includes('查看地圖');
-}).on('click', scrollToMap);
+  if (!name)  { $('#eventError').text('請填寫活動名稱'); return; }
+  if (!start) { $('#eventError').text('請選擇開始日期'); return; }
+  if (!end)   { $('#eventError').text('請選擇結束日期'); return; }
+
+  $('#addEventBtn').text('新增中...').prop('disabled', true);
+  $.ajax({
+    url: '/admin/events', method: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ event_name: name, start_date: start, end_date: end }),
+    success: function (data) {
+      if (data.success) {
+        showToast('活動已新增！');
+        $('#newEventName, #newEventStart, #newEventEnd').val('');
+        loadEvents();
+      } else {
+        $('#eventError').text(data.message);
+      }
+      $('#addEventBtn').text('＋ 新增活動').prop('disabled', false);
+    },
+    error: function () {
+      $('#eventError').text('網路錯誤，請稍後再試');
+      $('#addEventBtn').text('＋ 新增活動').prop('disabled', false);
+    }
+  });
+});
+
+$(document).on('click', '.event-delete-btn', function () {
+  if (!confirm('確定刪除此活動？')) return;
+  const id = $(this).data('id');
+  $.ajax({
+    url: '/admin/events/' + id, method: 'DELETE',
+    success: function (data) {
+      if (data.success) { showToast('活動已刪除', 'info'); loadEvents(); }
+      else showToast('刪除失敗', 'error');
+    }
+  });
+});
+
+/* ══ 🎯 【全新追加】管理/刪除攤位核心邏輯 ═════════════════════════ */
+
+  // 1. 頁面載入時，動態檢查攤主是否有攤位，並切換按鈕
+  function checkVendorStallStatus() {
+    // 借用你們既有的這個 API 來判斷攤主狀態
+    $.get('/vendor/products', function (data) {
+      if (data.has_stall) {
+        // 如果已經有攤位了，立刻將「建立」魔改成「管理」
+        $('#stallCardTitle').text('管理攤位');
+        $('#stallCardDesc').text('修改攤位基本資訊，或進行結束營業刪除。');
+        $('#stallCardActionBtnContainer').html(
+          '<button class="btn btn-primary btn-full" id="openManageStallBtn">管理攤位</button>'
+        );
+      }
+    });
+  }
+  // 如果畫面上有攤主面板，就啟動檢查
+  if ($('.vendor-panel').length) checkVendorStallStatus();
+
+// 2. 控制「管理攤位」Modal 的開關（🎯 補齊開啟、✕ 按鈕、與遮罩關閉邏輯）
+  $(document).on('click', '#openManageStallBtn', function () {
+    openModal('#manageStallModal');
+  });
+  
+  // 📢 【全新補上】點擊 ✕ 按鈕時，要乖乖關閉管理視窗
+  $(document).on('click', '#closeManageStall', function () {
+    closeModal('#manageStallModal');
+  });
+
+  // 📢 【全新補上】點擊視窗外的半透明遮罩時，也要自動關閉
+  $(document).on('click', '#manageStallModal', function (e) {
+    if ($(e.target).is('#manageStallModal')) closeModal('#manageStallModal');
+  });
+
+  // 3. 🚨 核心功能：刪除攤位（含二次高強度提醒防誤觸）
+  $(document).on('click', '#deleteStallBtn', function () {
+    // 第一次提醒
+    if (confirm('⚠️ 警告：確定要刪除您的攤位嗎？此動作將會清除所有攤位資訊！')) {
+      // 第二次終極提醒
+      if (confirm('🛑 這是最後確認！刪除後連同您的「商品資料」也將一併消失，真的要刪除嗎？')) {
+        
+        // 兩關都通過了，正式發射 DELETE 請求給後端
+        $.ajax({
+          url: '/vendor/stall',
+          method: 'DELETE',
+          success: function (data) {
+            if (data.success) {
+              // 1. 關閉管理視窗
+              closeModal('#manageStallModal'); // 請對齊你原本關彈窗的 id
+              
+              // 2. 跳出成功通知（如果你們有寫 Toast 的話，沒有的話可以刪掉這行）
+              if (typeof showToast === "function") {
+                showToast('攤位已成功刪除！', 'info');
+              } else {
+                alert('攤位已成功刪除！');
+              }
+              
+              // 🎯 3. 關鍵大絕招：延遲半秒後，強制全網頁重新整理！
+              // 網頁一刷新，就會重新呼叫 checkVendorStallStatus() ➔ 發現沒攤位 ➔ 按鈕一秒變回「建立攤位」
+              setTimeout(function() {
+                window.location.reload(true); // true 代表強制跟伺服器抓最新資料，不吃瀏覽器快取
+              }, 500);
+
+            } else {
+              alert(data.message || '刪除失敗，請稍後再試');
+            }
+          },
+          error: function (xhr, status, error) {
+            console.error("🚨 刪除請求失敗:", error);
+            alert("伺服器發生錯誤，請檢查主控台");
+          }
+        });
+
+      }
+    }
+  });
+
+  // 4. 別忘了順手把新 Modal 加進 ESC 鍵關閉清單裡
+  $(document).on('keydown', function (e) {
+    if (e.key === 'Escape') closeModal('#manageStallModal');
+  });
+

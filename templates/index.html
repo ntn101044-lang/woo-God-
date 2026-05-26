@@ -6,7 +6,7 @@
   <title>Woo~God</title>
   <!--從 Google Fonts 下載字體-->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link href="jquery-ui.css" rel="stylesheet">
 
   <!-- jQuery UI CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui/jquery-ui.css') }}">
@@ -26,47 +26,29 @@
 <div id="overlaySideber" class="overlaySideber"></div>
 
 <!-- Sidebar -->
+
 <aside id="sidebar" class="sidebar">
-  <!-- Sidebar Header -->
   <div class="sidebar-header">
-    <!-- Logo -->
     <div class="sidebar-logo">
       <span>⛩</span>
       <span class="logo-text">市集通</span>
     </div>
-    <!-- Close Button -->
     <button id="closeSidebar" class="close-btn">
       ✕
     </button>
   </div>
-  <!-- Search -->
   <div class="sidebar-search">
     <input type="text" placeholder="搜尋攤位..." class="search-input">
   </div>
-  <!-- Navigation -->
+  
   <nav class="sidebar-menu">
-    <a href="#food" class="menu-item">🍜 美食</a>
-    <a href="#drink" class="menu-item">🧋 飲料</a>
-    <a href="#dessert" class="menu-item">🍰 甜點</a>
-    <a href="#handmade" class="menu-item">🎨 手作</a>
-    <a href="#game" class="menu-item">🎮 遊戲</a>
+    <a href="#hotStallTrack" class="menu-item">🔥 排隊熱門</a>
+    <a href="#fewStallTrack" class="menu-item">😌 輕鬆入場</a>
+    <a href="#allStallGrid" class="menu-item">🏪 所有攤位</a>
+    <a href="#mapSection" class="menu-item">📍 市集地圖</a>
   </nav>
 
-  <div class="sidebar-divider"></div>
-  
-  <!-- Quick Actions -->
-  <div class="sidebar-actions">
-    <button class="action-btn">
-      🔥 熱門攤位
-    </button>
-    <button class="action-btn">
-      ⚡ 排隊最少
-    </button>
-    <button class="action-btn">
-      🗺 查看地圖
-    </button>
-
-  </div>
+</aside>
 </aside>
 {% endif %}
   
@@ -75,23 +57,26 @@
     <span id="openSidebar" class="logo-icon menu-btn">⛩</span>
     <span class="brand-name">Woo~God</span>
   </div>
-  <div class="nav-right">
-    {% if role == 'visitor' %}
-      <!-- 遊客已登入 -->
-      <span id="visitorInfo" class="visitor-info" {% if not visitor_account %}style="display:none"{% endif %}>
-        <span id="visitorAccount" class="vendor-badge">👤 {{ visitor_account }}</span>
-        <a href="/visitor/logout" class="btn btn-outline-sm">登出</a>
-      </span>
-      <!-- 遊客未登入 -->
-      <button class="btn btn-outline btn-sm" id="visitorLoginBtn" {% if visitor_account %}style="display:none"{% endif %}>會員登入</button>
-      <button class="btn btn-outline" id="loginBtn">Vendor Log In</button>
-    {% elif role == 'vendor' %}
-      <span class="vendor-badge">Vendor: {{ vendor_name }}</span>
-      <button class="btn btn-ghost" id="myStallBtn">MyStall</button>
-      <!-- 攤主登出按鈕 -->
-      <button id='logoutBtn' class="btn btn-outline-sm">Log Out</button>
-    {% endif %}
-  </div>
+<div class="nav-right">
+  <!-- 👤 狀況 A：當前角色是遊客 (Visitor) -->
+  {% if role == 'visitor' %}
+    <!-- ╔═ 【補齊】遊客登入後要顯示的帳號與登出按鈕 ═╗ -->
+    <div id="visitorInfo" style="display: none; align-items: center; gap: 10px;">
+      <span id="visitorAccount" class="vendor-badge">👤 載入中...</span>
+      <button class="btn btn-ghost" id="visitorLogoutBtn">登出</button>
+    </div>
+
+    <!-- 未登入時顯示的按鈕 -->
+    <button class="btn btn-outline" id="loginBtn">會員登入</button>
+    <button class="btn-vendor-login" id="vendorLoginTrigger">攤主登入</button>
+
+  <!-- 🏪 狀況 B：當前角色是攤主 (Vendor) -->
+  {% elif role == 'vendor' %}
+    <span class="vendor-badge">👤 {{ vendor_name }}</span>
+    <button class="btn btn-ghost" id="eventMgmtBtn">🗓 管理活動</button>
+    <button class="btn-vendor-login" id="logoutBtn">登出</button>
+  {% endif %}
+</div>
 </nav>
 
 
@@ -109,6 +94,69 @@
       <button class="btn btn-secondary btn-lg">查看地圖</button>
     </div>
   </div>
+  <div class="hero-visual">
+  <div class="market-info-card">
+
+    <!-- 狀態指示燈 -->
+    <div class="market-status-row">
+      <span class="status-dot active"></span>
+      <span class="status-label" id="marketStatusLabel">市集進行中</span>
+      <span class="status-time" id="marketStatusTime">今日 10:00 – 18:00</span>
+    </div>
+
+    <div class="market-divider"></div>
+
+    <!-- 統計數字 -->
+    <div class="market-stats">
+      <div class="stat-item">
+        <span class="stat-num" id="statStalls">–</span>
+        <span class="stat-desc">活躍攤位</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" id="statQueue">–</span>
+        <span class="stat-desc">總排隊人數</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" id="statOrders">–</span>
+        <span class="stat-desc">今日訂單</span>
+      </div>
+    </div>
+
+    <div class="market-divider"></div>
+
+    <!-- 下一場市集 / 倒數 -->
+    <div class="market-next">
+      <p class="next-label">下一場市集</p>
+      <p class="next-date" id="nextMarketDate">2025 / 06 / 07（六）</p>
+      <div class="countdown-row" id="countdownRow">
+        <div class="countdown-item">
+          <span class="cd-num" id="cdDays">–</span>
+          <span class="cd-unit">天</span>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-item">
+          <span class="cd-num" id="cdHours">–</span>
+          <span class="cd-unit">時</span>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-item">
+          <span class="cd-num" id="cdMins">–</span>
+          <span class="cd-unit">分</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 熱門攤位 mini list -->
+    <div class="market-divider"></div>
+    <p class="next-label">🔥 最多人排隊</p>
+    <div class="mini-stall-list" id="miniStallList">
+      <div class="mini-stall-skeleton"></div>
+      <div class="mini-stall-skeleton"></div>
+      <div class="mini-stall-skeleton"></div>
+    </div>
+
+  </div>
+</div>
 </section>
 
 <!-- ══ 🔥 熱門攤位（左右滑動）══════════════════════════════════ -->
@@ -170,9 +218,10 @@
   <div class="panel-grid">
     <div class="panel-card" id="setupStallCard">
       <div class="panel-icon">🏪</div>
-      <h3>設立攤位</h3>
-      <p>填寫攤位資訊，送審後即可開始營業</p>
-      <button class="btn btn-primary" id="openStallForm">建立攤位</button>
+      <h3 id="stallCardTitle">設立攤位</h3>
+      <p id="stallCardDesc">填寫攤位資訊，送審後即可開始營業</p>
+      <div id="stallCardActionBtnContainer" style="width: 100%;">
+      <button class="btn btn-primary btn-full" id="openStallForm">建立攤位</button></div>
     </div>
     <div class="panel-card">
       <div class="panel-icon">📦</div>
@@ -197,14 +246,38 @@
   <div id="overlayLogout" class="overlayLogout"></div>
   
   <div id="logoutPage">
-    <button id="closeLogout" class="close-btn ">
-      ✕
-    </button>
-    <p>sure?</p>
-    <button id="Logout">i'm sure!</button>
+  <div style="display:flex; flex-direction:column; gap:1.2rem; width:100%;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;">確認登出</h2>
+      <button id="closeLogout" class="modal-close" style="position:static;">✕</button>
+    </div>
+    <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+      確定要登出攤主帳號嗎？
+    </p>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:0.5rem;">
+      <button id="closeLogout2" class="btn btn-secondary">取消</button>
+      <button id="Logout" class="btn-vendor-login">確認登出</button>
+    </div>
   </div>
+</div>
 </section>
 {% endif %}
+
+<!-- ╔═ 【全新追加】管理攤位 Modal ═╗ -->
+<div class="modal-overlay" id="manageStallModal">
+  <div class="modal">
+    <button class="modal-close" id="closeManageStall">✕</button>
+    <h2 class="modal-title">管理我的攤位</h2>
+    <p class="modal-sub">您可以進行攤位維護或關閉攤位</p>
+    
+    <div style="margin: 2rem 0; text-align: center;">
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">若不需要營業，您可以選擇將攤位徹底刪除。</p>
+    </div>
+
+    <!-- 🚨 刪除按鈕 -->
+    <button class="btn btn-full" id="deleteStallBtn" style="background-color: #e85b47; color: white;">❌ 刪除我的攤位</button>
+  </div>
+</div>
 
 <!-- ════════════════════════════════════════════════════════════
      MODALS
@@ -278,7 +351,7 @@
       </div>
       <div class="form-error" id="vLoginError"></div>
       <button class="btn btn-primary btn-full" id="submitVisitorLogin">登入並下單</button>
-      <p class="modal-hint">測試帳號：visitor1 ／ 密碼：1234</p>
+      <p class="modal-hint">測試帳號：user01@example.com/user02@example.com ／ 密碼：password123/password456</p>
     </div>
     <!-- 註冊表單 -->
     <div id="visitorRegisterForm" style="display:none">
@@ -392,10 +465,57 @@
   <div class="section-header">
     <h2>📍 市集地圖</h2>
   </div>
+  <div class="map-card">
+
+  <div class="map-topbar">
+    <div>
+      <p class="map-label">Market Navigation</p>
+    </div>
+    <button class="map-full-btn">
+      🔍 查看完整地圖
+    </button>
+  </div>
+
   <div class="map-placeholder">
     <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖">
   </div>
+
+</div>
 </section>
+
 {% endif %}
+<!-- ══ Event 管理 MODAL ════════════════════════════════════════ -->
+<div class="modal-overlay" id="eventMgmtModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" id="closeEventMgmt">✕</button>
+    <h2 class="modal-title">🗓 市集活動管理</h2>
+    <p class="modal-sub">新增或編輯市集活動時間</p>
+
+    <!-- 新增表單 -->
+    <div class="add-product-form">
+      <div class="form-row" style="gap:10px; flex-wrap:wrap;">
+        <div class="form-group" style="flex:2; min-width:140px;">
+          <label>活動名稱</label>
+          <input type="text" id="newEventName" placeholder="例：2025 夏季市集">
+        </div>
+        <div class="form-group" style="flex:1; min-width:120px;">
+          <label>開始日期</label>
+          <input type="date" id="newEventStart">
+        </div>
+        <div class="form-group" style="flex:1; min-width:120px;">
+          <label>結束日期</label>
+          <input type="date" id="newEventEnd">
+        </div>
+      </div>
+      <div class="form-error" id="eventError"></div>
+      <button class="btn btn-primary" id="addEventBtn">＋ 新增活動</button>
+    </div>
+
+    <!-- 活動列表 -->
+    <div id="eventMgmtList">
+      <p class="loading-text">載入中...</p>
+    </div>
+  </div>
+</div>
 </body>
 </html>

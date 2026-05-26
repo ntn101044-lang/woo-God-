@@ -5,6 +5,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import uuid
 
+# ══════════════════════════════════════════════════════════════
+# 1. 系統核心配置與資料庫初始化
+# ══════════════════════════════════════════════════════════════
+
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///market.db'
@@ -12,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # ══════════════════════════════════════════════════════════════
-# Models
+# 2. 資料庫模型定義 (Models) - 由 db.create_all() 全自動轉譯成 SQL
 # ══════════════════════════════════════════════════════════════
 
 class Event(db.Model):
@@ -35,6 +39,7 @@ class Vendor(db.Model):
     def set_password(self, pw):   self.password_hash = generate_password_hash(pw)
     def check_password(self, pw): return check_password_hash(self.password_hash, pw)
 
+# 多對多交集表：攤位與商品
 offers = db.Table('offers',
     db.Column('stall_id',   db.String(36), db.ForeignKey('stall.stall_id'),    primary_key=True),
     db.Column('product_id', db.String(36), db.ForeignKey('product.product_id'), primary_key=True)
@@ -45,7 +50,7 @@ class Stall(db.Model):
     stall_id      = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     stall_name    = db.Column(db.String(100), nullable=False)
     zone_type     = db.Column(db.String(20))
-    status        = db.Column(db.String(20), default='active')  # 省略審核，直接 active
+    status        = db.Column(db.String(20), default='active')
     vendor_id     = db.Column(db.String(36), db.ForeignKey('vendor.vendor_id'), unique=True)
     event_id      = db.Column(db.String(36), db.ForeignKey('event.event_id'))
     products      = db.relationship('Product', secondary=offers, backref='stalls', lazy=True)
@@ -93,7 +98,7 @@ class Includes(db.Model):
     sold_price = db.Column(db.Float, nullable=False)
 
 # ══════════════════════════════════════════════════════════════
-# 輔助
+# 3. 權限驗證與資料轉換輔助工具 (Helpers)
 # ══════════════════════════════════════════════════════════════
 
 def vendor_required(f):
@@ -133,7 +138,7 @@ def order_to_dict(o):
     }
 
 # ══════════════════════════════════════════════════════════════
-# 路由
+# 4. 共用基礎路由 (其餘防區尚未拆分前暫留於此)
 # ══════════════════════════════════════════════════════════════
 
 @app.route('/')
@@ -145,8 +150,7 @@ def index():
                            vendor_name=vendor_name,
                            visitor_account=visitor_account)
 
-# ── 攤主 ──────────────────────────────────────────────────────
-
+# ── 攤主登入與基本管理 ──
 @app.route('/vendor/login', methods=['POST'])
 def vendor_login():
     data    = request.get_json()
@@ -161,10 +165,30 @@ def vendor_logout():
     session.clear()
     return redirect(url_for('index'))
 
-@app.route('/vendor/stall', methods=['GET', 'POST'])
+@app.route('/vendor/stall', methods=['GET', 'POST', 'DELETE']) # 🎯 1. 加上 DELETE 允許
 @vendor_required
 def vendor_stall():
     vendor_id = session['vendor_id']
+    
+    # 🚨 2. 全新追加：處理前端發射過來的 DELETE 刪除攤位請求
+    if request.method == 'DELETE':
+        stall = Stall.query.filter_by(vendor_id=vendor_id).first()
+        if not stall:
+            return jsonify({'success': False, 'message': '找不到您的攤位資料'})
+        
+        try:
+            # 🎯 核心連鎖反應：手動把該攤位的所有商品從關聯中移除/刪除
+            # 因為你們是用多對多 offers 關聯，這裡直接將商品關聯清空
+            stall.products.clear() 
+            
+            # 🎯 把攤位本身從資料庫中抹除
+            db.session.delete(stall)
+            db.session.commit()
+            return jsonify({'success': True, 'message': '攤位與關聯商品已成功刪除！'})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': f'資料庫錯誤: {str(e)}'})
+        
     if request.method == 'POST':
         data     = request.get_json()
         existing = Stall.query.filter_by(vendor_id=vendor_id).first()
@@ -183,8 +207,7 @@ def vendor_stall():
     return jsonify({'stall': {'stall_id': stall.stall_id, 'stall_name': stall.stall_name,
                               'zone_type': stall.zone_type, 'status': stall.status}})
 
-# ── 攤主：商品管理 ─────────────────────────────────────────────
-
+# ── 攤主：商品管理 ──
 @app.route('/vendor/products', methods=['GET'])
 @vendor_required
 def vendor_products():
@@ -232,8 +255,7 @@ def vendor_delete_product(product_id):
     db.session.commit()
     return jsonify({'success': True})
 
-# ── 遊客 ──────────────────────────────────────────────────────
-
+# ── 遊客基礎通用路由 ──
 @app.route('/visitor/login', methods=['POST'])
 def visitor_login():
     data    = request.get_json()
@@ -243,22 +265,6 @@ def visitor_login():
                         'visitor_account': visitor.account})
         return jsonify({'success': True, 'account': visitor.account})
     return jsonify({'success': False, 'message': '帳號或密碼錯誤'})
-
-@app.route('/visitor/register', methods=['POST'])
-def visitor_register():
-    data    = request.get_json()
-    account = data.get('account', '').strip()
-    password= data.get('password', '')
-    if not account or not password:
-        return jsonify({'success': False, 'message': '請填寫帳號與密碼'})
-    if Visitor.query.filter_by(account=account).first():
-        return jsonify({'success': False, 'message': '此帳號已被使用'})
-    v = Visitor(account=account)
-    v.set_password(password)
-    db.session.add(v)
-    db.session.commit()
-    session.update({'role': 'visitor', 'visitor_id': v.visitor_id, 'visitor_account': v.account})
-    return jsonify({'success': True, 'account': v.account})
 
 @app.route('/visitor/logout')
 def visitor_logout():
@@ -271,8 +277,7 @@ def visitor_session():
         return jsonify({'logged_in': True, 'account': session.get('visitor_account', '')})
     return jsonify({'logged_in': False})
 
-# ── 攤位 & 商品瀏覽 ───────────────────────────────────────────
-
+# ── 攤位 & 商品瀏覽 ──
 @app.route('/stalls')
 def stall_list():
     stalls = Stall.query.filter_by(status='active').all()
@@ -292,8 +297,7 @@ def stall_products(stall_id):
     return jsonify({'stall_id': stall.stall_id, 'stall_name': stall.stall_name,
                     'zone_type': stall.zone_type, 'products': products})
 
-# ── 訂單 ──────────────────────────────────────────────────────
-
+# ── 預點餐訂單系統 ──
 @app.route('/order/place', methods=['POST'])
 @visitor_required
 def place_order():
@@ -347,8 +351,116 @@ def update_order_status(order_id):
         return jsonify({'success': True, 'status': order.status})
     return jsonify({'success': False, 'message': f'無法從 {order.status} 改為 {new_st}'})
 
+@app.route('/market/info')
+def market_info():
+    today = datetime.now().strftime('%Y-%m-%d')
+    now   = datetime.now()
+
+    # 找今天正在進行的 event
+    active_event = Event.query.filter(
+        Event.start_date <= today,
+        Event.end_date   >= today
+    ).first()
+
+    # 找下一場 event（未來最近的）
+    next_event = Event.query.filter(
+        Event.start_date > today
+    ).order_by(Event.start_date.asc()).first()
+
+    # 今日訂單數
+    today_orders = Order.query.filter(
+        Order.order_time.like(today + '%')
+    ).count()
+
+    # 活躍攤位數 & 總排隊人數
+    active_stalls = Stall.query.filter_by(status='active').all()
+    total_queue   = sum(
+        QueueTicket.query.filter_by(stall_id=s.stall_id, status='waiting').count()
+        for s in active_stalls
+    )
+
+    return jsonify({
+        'active_event': {
+            'event_name': active_event.event_name,
+            'start_date': active_event.start_date,
+            'end_date':   active_event.end_date,
+        } if active_event else None,
+        'next_event': {
+            'event_name': next_event.event_name,
+            'start_date': next_event.start_date,
+            'end_date':   next_event.end_date,
+        } if next_event else None,
+        'stats': {
+            'stall_count':  len(active_stalls),
+            'total_queue':  total_queue,
+            'today_orders': today_orders,
+        }
+    })
+
+# ── Event 管理（簡易 admin，實際上線建議加密碼保護）────────────
+
+@app.route('/admin/events', methods=['GET'])
+def admin_events():
+    events = Event.query.order_by(Event.start_date.desc()).all()
+    return jsonify({'events': [{
+        'event_id':   e.event_id,
+        'event_name': e.event_name,
+        'start_date': e.start_date,
+        'end_date':   e.end_date,
+    } for e in events]})
+
+@app.route('/admin/events', methods=['POST'])
+def admin_create_event():
+    data = request.get_json()
+    name  = data.get('event_name', '').strip()
+    start = data.get('start_date', '').strip()
+    end   = data.get('end_date', '').strip()
+    if not name or not start or not end:
+        return jsonify({'success': False, 'message': '請填寫所有欄位'})
+    if start > end:
+        return jsonify({'success': False, 'message': '結束日期不能早於開始日期'})
+    e = Event(event_name=name, start_date=start, end_date=end)
+    db.session.add(e)
+    db.session.commit()
+    return jsonify({'success': True, 'event': {
+        'event_id': e.event_id, 'event_name': e.event_name,
+        'start_date': e.start_date, 'end_date': e.end_date
+    }})
+
+@app.route('/admin/events/<event_id>', methods=['PATCH'])
+def admin_update_event(event_id):
+    e    = Event.query.get_or_404(event_id)
+    data = request.get_json()
+    if 'event_name' in data: e.event_name = data['event_name'].strip()
+    if 'start_date' in data: e.start_date = data['start_date'].strip()
+    if 'end_date'   in data: e.end_date   = data['end_date'].strip()
+    if e.start_date > e.end_date:
+        return jsonify({'success': False, 'message': '結束日期不能早於開始日期'})
+    db.session.commit()
+    return jsonify({'success': True})
+
+@app.route('/admin/events/<event_id>', methods=['DELETE'])
+def admin_delete_event(event_id):
+    e = Event.query.get_or_404(event_id)
+    db.session.delete(e)
+    db.session.commit()
+    return jsonify({'success': True})
+# ══════════════════════════════════════════════════════════════
+# 5. 🔥 核心亮點：動態掛載模組藍圖 (Blueprints Registration)
+# ══════════════════════════════════════════════════════════════
+
+# 💡 物理意義：這段必須放在 Models 下方。當此處執行 import 時，
+# 你的 routes_weiyong.py 就能順利回頭抓到上面已經定義完成的 db、Visitor、Event 等強大資源。
+from routes.routes_weiyong import weiyong_bp
+
+# 正式向系統核心註冊你的專屬模組延長線
+app.register_blueprint(weiyong_bp)
+
+# ══════════════════════════════════════════════════════════════
+# 6. 系統主程式啟動點
 # ══════════════════════════════════════════════════════════════
 if __name__ == '__main__':
     with app.app_context():
+        # ORM 自動掃描上述所有 class 結構，全自動建立 SQLite 表格
         db.create_all()
     app.run(debug=True)
