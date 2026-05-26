@@ -111,7 +111,7 @@ body {
   background: rgba(171, 167, 167, 0.12);
   border-bottom: 1px solid rgba(0,0,0,0.08);
   flex-shrink: 0;
-   backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 .logo-text {
@@ -136,13 +136,14 @@ body {
 }
 .close-btn:hover { background: rgba(255,255,255,0.55);transform: rotate(90deg);}
 
-/*logoutPage*/
-#overlayLogout {
+/* 👥 攤主與遊客共用登出遮罩 */
+#overlayLogout, #overlayVisitorLogout {
   display: none; position: fixed; inset: 0; z-index: 4;
   background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
 }
 
-#logoutPage {
+/* 👥 攤主與遊客共用登出視窗樣式 */
+#logoutPage, #visitorLogoutPage {
   display: none;
   flex-direction: column;
   background: var(--bg2);
@@ -157,7 +158,11 @@ body {
   z-index: 5;
 }
 
-#logoutPage.show {display: flex;animation: fadeScale 0.2s ease; }
+/* 👥 當加上 .show 時，兩者都套用優雅的彈出動畫 */
+#logoutPage.show, #visitorLogoutPage.show {
+  display: flex;
+  animation: fadeScale 0.2s ease; 
+}
 
 @keyframes fadeScale {
   from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
@@ -208,6 +213,7 @@ body {
   text-decoration: none;
   font-weight: 500;
   transition: all 0.15s ease;
+  animation: none;
 }
 .menu-item:hover {
   background: rgba(255,255,255,0.3);

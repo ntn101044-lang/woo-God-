@@ -40,29 +40,102 @@ $(function () {
     cancelled:   '#e85b47'
   };
 
-  /* ══ 登入 Modal ═════════════════════════════════════════════ */
+/* ══ 登入 Modal ═════════════════════════════════════════════ */
 
   // 會員登入按鈕
-$('#loginBtn').on('click', function () {
-  openModal('#visitorLoginModal');
-  $('#vLoginAccount').trigger('focus');
-});
+  $('#loginBtn').on('click', function () {
+    openModal('#visitorLoginModal');
+    $('#vLoginAccount').trigger('focus');
+  });
 
-// 攤主登入按鈕
-$('#vendorLoginTrigger').on('click', function () {
-  openModal('#loginModal');
-  $('#inputUsername').trigger('focus');
-});
+  // 攤主登入按鈕觸發 Modal
+  $('#vendorLoginTrigger').on('click', function () {
+    openModal('#loginModal');
+    $('#inputUsername').trigger('focus');
+  });
 
+  // 關閉攤主 Modal 
   $('#closeModal').on('click', () => closeModal('#loginModal'));
   $('#loginModal').on('click', function (e) {
     if ($(e.target).is('#loginModal')) closeModal('#loginModal');
   });
 
-  $('#submitLogin').on('click', submitLogin);
-  $('#loginModal').on('keydown', function (e) {
-    if (e.key === 'Enter') submitLogin();
+  // 攤主 Modal 內的 Tab 切換
+  $('.vendor-tab').on('click', function () {
+    $('.vendor-tab').removeClass('active'); // 移除兩者的選取狀態
+    $(this).addClass('active');             // 幫當前點擊的加上亮色底線
+    
+    const tab = $(this).data('tab');
+    if (tab === 'vdr-login') {
+      $('#vendorLoginForm').show();
+      $('#vendorRegisterForm').hide();
+    } else {
+      $('#vendorLoginForm').hide();
+      $('#vendorRegisterForm').show();
+    }
+    $('#loginError, #vdrRegError').text('');
   });
+
+  // 🏪 攤主登入表單的「登入」按鈕點擊事件 (補上原本漏掉的綁定)
+  $('#submitLoginBtn').on('click', function() {
+    submitLogin();
+  });
+  // 🏪 攤主註冊表單的「註冊」按鈕點擊事件 (已修正為 -Btn 避免全域衝突)
+  $('#submitVendorRegisterBtn').on('click', function() {
+    submitVendorRegister();
+  });
+  
+  // 處理鍵盤 Enter 送出
+  $('#loginModal').on('keydown', function (e) {
+    if (e.key === 'Enter') {
+      // 🎯 根據當前看得到哪一個表單，決定 Enter 要觸發登入還是註冊
+      if ($('#vendorLoginForm').is(':visible')) {
+        submitLogin();
+      } else {
+        submitVendorRegister(); // 💡 這裡原本就是呼叫函式，維持這樣沒錯！
+      }
+    }
+  });
+
+  // 🎯 【全新追加】攤主註冊 AJAX 函式
+  function submitVendorRegister() {
+    const name     = $('#vdrRegName').val().trim();
+    const account  = $('#vdrRegAccount').val().trim();
+    const password = $('#vdrRegPassword').val();
+    const phone    = $('#vdrRegPhone').val().trim();
+    
+    $('#vdrRegError').text('');
+    
+    if (!name || !account || !password || !phone) { $('#vdrRegError').text('請完整填寫所有欄位'); return; }
+    if (password.length < 4) { $('#vdrRegError').text('密碼至少 4 個字元'); return; }
+
+    // 🎯 關鍵修正：同步改成 #submitVendorRegisterBtn，按鈕狀態才會動
+    $('#submitVendorRegisterBtn').text('註冊中...').prop('disabled', true);
+    
+    $.ajax({
+      url: '/vendor/register', // 呼叫後端的攤主註冊路由
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ name, username: account, password, phone }), 
+      success: function (data) {
+        if (data.success) {
+          closeModal('#loginModal');
+          showToast('攤主帳號註冊成功！歡迎加入市集！');
+          // 註冊成功後全自動重整網頁，讓後台即時轉變為登入狀態
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          $('#vdrRegError').text(data.message || '註冊失敗');
+        }
+        // 🎯 關鍵修正：同步改成 #submitVendorRegisterBtn
+        $('#submitVendorRegisterBtn').text('註冊並登入').prop('disabled', false);
+      },
+      error: function () {
+        $('#vdrRegError').text('網路錯誤或後端尚未建立此路由，請稍後再試');
+        // 🎯 關鍵修正：同步改成 #submitVendorRegisterBtn
+        $('#submitVendorRegisterBtn').text('註冊並登入').prop('disabled', false);
+      }
+    });
+  }
 
   function submitLogin() {
     const username = $('#inputUsername').val().trim();
@@ -74,7 +147,8 @@ $('#vendorLoginTrigger').on('click', function () {
       return;
     }
 
-    $('#submitLogin').text('登入中...').prop('disabled', true);
+    // 🎯 使用最新的 Btn 確保控制按鈕狀態不衝突
+    $('#submitLoginBtn').text('登入中...').prop('disabled', true);
 
     $.ajax({
       url: '/vendor/login',
@@ -87,16 +161,15 @@ $('#vendorLoginTrigger').on('click', function () {
           setTimeout(() => location.reload(), 800);
         } else {
           $('#loginError').text(data.message || '帳號或密碼錯誤');
-          $('#submitLogin').text('登入').prop('disabled', false);
+          $('#submitLoginBtn').text('登入').prop('disabled', false);
         }
       },
       error: function () {
         $('#loginError').text('網路錯誤，請稍後再試');
-        $('#submitLogin').text('登入').prop('disabled', false);
+        $('#submitLoginBtn').text('登入').prop('disabled', false);
       }
     });
   }
-
   /* ══ 漢堡選單點擊與四大核心跳轉 ════════════════════════════════ */
   $("#openSidebar").click(function () {
     $("#sidebar").addClass("show");
@@ -272,11 +345,11 @@ $('#vendorLoginTrigger').on('click', function () {
         } else {
           $('#vRegError').text(data.message || '註冊失敗');
         }
-        $('#submitVisitorRegister').text('註冊並下單').prop('disabled', false);
+        $('#submitVisitorRegister').text('註冊並登入').prop('disabled', false);
       },
       error: function () {
         $('#vRegError').text('網路錯誤，請稍後再試');
-        $('#submitVisitorRegister').text('註冊並下單').prop('disabled', false);
+        $('#submitVisitorRegister').text('註冊並登入').prop('disabled', false);
       }
     });
   }
@@ -305,13 +378,21 @@ $('#vendorLoginTrigger').on('click', function () {
       $('#visitorFab').hide();
     }
   }
-
-  // 會員登出按鈕點擊事件
+  // 1. 點擊導覽列的「登出」：改為秀出精美浮層與遮罩
   $(document).on('click', '#visitorLogoutBtn', function () {
-    if (confirm('確定要登出會員嗎？')) {
-      // 呼叫後端的遊客登出路由 (對齊你們 app.py 的設計)
-      window.location.href = "/visitor/logout"; 
-    }
+    $("#visitorLogoutPage").addClass("show");
+    $("#overlayVisitorLogout").show();
+  });
+
+  // 2. 點擊「取消」或「✕」或「灰色遮罩」：收起浮層
+  $(document).on('click', '#closeVisitorLogout, #closeVisitorLogout2, #overlayVisitorLogout', function () {
+    $("#visitorLogoutPage").removeClass("show");
+    $("#overlayVisitorLogout").hide();
+  });
+
+  // 3. 真正點擊「確認登出」：跳轉後端登出路由
+  $(document).on('click', '#confirmVisitorLogout', function () {
+    window.location.href = "/visitor/logout";
   });
 
   // 頁面載入時檢查遊客 session
