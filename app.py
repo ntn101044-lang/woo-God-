@@ -160,6 +160,52 @@ def vendor_login():
         return jsonify({'success': True, 'name': vendor.name})
     return jsonify({'success': False, 'message': '帳號或密碼錯誤'})
 
+@app.route('/vendor/register', methods=['POST'])
+def vendor_register():
+    data = request.get_json()
+    
+    # 1. 接收前端打包丟過來的 4 大欄位
+    name     = data.get('name', '').strip()
+    account  = data.get('username', '').strip() # 前端對應 id 是 vdrRegAccount，傳入參數是 username
+    password = data.get('password', '')
+    phone    = data.get('phone', '').strip()
+
+    # 2. 高防禦力防呆：檢查欄位有沒有填完整
+    if not name or not account or not password or not phone:
+        return jsonify({'success': False, 'message': '請完整填寫所有註冊欄位'})
+
+    # 3. 檢查帳號有沒有被別人註冊過
+    existing_vendor = Vendor.query.filter_by(account=account).first()
+    if existing_vendor:
+        return jsonify({'success': False, 'message': '此帳號已被註冊，請換一個'})
+
+    try:
+        # 4. 建立全新的攤主物件
+        new_vendor = Vendor(
+            account=account,
+            name=name,
+            phone=phone
+        )
+        # 5. 🎯 呼叫你們 Vendor model 內建的超能力，全自動幫密碼加鹽雜湊（變成長串亂碼）
+        new_vendor.set_password(password)
+
+        # 6. 寫入資料庫並 Commit 生效
+        db.session.add(new_vendor)
+        db.session.commit()
+
+        # 7. 註冊成功即視同登入，自動幫他寫入 Session 紀錄狀態
+        session.update({
+            'role': 'vendor',
+            'vendor_id': new_vendor.vendor_id,
+            'vendor_name': new_vendor.name
+        })
+
+        return jsonify({'success': True, 'message': '註冊成功'})
+
+    except Exception as e:
+        db.session.rollback() # 萬一噴錯，資料庫立刻回滾
+        return jsonify({'success': False, 'message': f'資料庫註冊失敗: {str(e)}'})
+
 @app.route('/vendor/logout')
 def vendor_logout():
     session.clear()
