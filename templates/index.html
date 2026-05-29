@@ -522,12 +522,54 @@
       🔍 查看完整地圖
     </button>
   </div>
-
+<!--查看完整地圖-->
   <div class="map-placeholder">
     <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖">
   </div>
+  <div class="modal-overlay" id="fullMapModal">
+    <div class="modal" style="max-width: 98%; width: 1300px; height: 95vh;">
+      <button class="modal-close" id="closeFullMap">✕</button>
+      <h2 class="modal-title">📍 市集完整導覽</h2>
 
-</div>
+      <div class="modal-body map-modal-container">
+        <div class="map-view-area">
+          <div class="map-wrapper">
+            <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖">
+
+            <div class="map-marker-area" id="marker-mexican" 
+                style="top: 11.5%; left: 13%; width: 13%; height: 5.5%;" 
+                data-title="墨西哥捲餅" data-desc="道地墨西哥風味，特製莎莎醬與鮮嫩肉片。"></div>
+
+            <div class="map-marker-area" id="marker-miso" 
+                style="top: 11.5%; left: 36%; width: 13%; height: 5.5%;" 
+                data-title="阿婆米苔目" data-desc="傳承三代的純米手工製作，Ｑ彈有勁的麵體搭配獨門肉燥。"></div>
+
+            <div class="map-marker-area" id="marker-drink" 
+                style="top: 11.5%; left: 59.5%; width: 13.5%; height: 5.5%;" 
+                data-title="手作珍珠奶茶" data-desc="使用在地水果與手工熬製糖漿，夏日最解渴的選擇。"></div>
+
+            <div class="map-marker-area" id="marker-tea" 
+                style="top: 78.2%; left: 14.2%; width: 12%; height: 5.5%;" 
+                data-title="台灣茶舖" data-desc="嚴選台灣高山茶葉，現場現泡。"></div>
+
+            <div class="map-marker-area" id="marker-craft" 
+                style="top: 78.2%; left: 40.2%; width: 13%; height: 5.5%;" 
+                data-title="現烤串串香" data-desc="炭火現烤美食，秘製香料讓你回味無窮。"></div>
+
+            <div class="map-marker-area" id="marker-jewelry" 
+                style="top: 78.2%; left: 67.8%; width: 13.5%; height: 5.5%;" 
+                data-title="文青手作飾品" data-desc="原創設計師的飾品、香氛與手繪明信片。"></div>
+
+            <div id="markerInfoCard" class="marker-info-card">
+              <button class="card-close">✕</button>
+              <h3 class="card-title"></h3>
+              <p class="card-text"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 {% endif %}

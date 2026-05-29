@@ -991,6 +991,63 @@ function scrollToMap() {
   $('#sidebar').removeClass('show');
   $("#overlaySideber").hide(); // 順手把剛剛說的 overlay 蟲修正好
 }
+
+$(function() { 
+  // 1. 點擊標籤顯示卡片
+  $(document).on('click', '.map-marker-area', function(e) {
+    e.stopPropagation(); 
+    
+    const title = $(this).data('title');
+    const desc = $(this).data('desc');
+    const $card = $('#markerInfoCard');
+
+    $card.find('.card-title').text(title);
+    $card.find('.card-text').text(desc);
+
+    const pos = $(this).position();
+    const areaWidth = $(this).outerWidth();
+    const areaHeight = $(this).outerHeight();
+    const cardWidth = $card.outerWidth();
+
+    const leftPos = pos.left + (areaWidth / 2) - (cardWidth / 2);
+    const topPos = pos.top + areaHeight + 15;
+
+    $card.css({
+      top: topPos + 'px',
+      left: leftPos + 'px',
+      zIndex: 2500
+    }).stop(true, true).fadeIn(200);
+  });
+
+  // 關閉按鈕
+  $(document).on('click', '.card-close', function(e) {
+    e.preventDefault(); // 防止默認行為
+    e.stopPropagation(); // 確保不會觸發到地圖的點擊事件
+    $('#markerInfoCard').fadeOut(200);
+  });
+
+  // 點擊卡片本體時不關閉
+  $(document).on('click', '#markerInfoCard', function(e) {
+    e.stopPropagation();
+  });
+
+  // 點擊地圖容器（非標籤、非卡片）關閉卡片
+  $(document).on('click', '.map-view-area', function(e) {
+    if (!$(e.target).closest('.map-marker-area, #markerInfoCard').length) {
+      $('#markerInfoCard').fadeOut(200);
+    }
+  });
+
+  // 視窗開關
+  $(document).on('click', '.map-full-btn', function() {
+    $('#fullMapModal').addClass('open');
+  });
+
+  $(document).on('click', '#closeFullMap', function() {
+    $('#fullMapModal').removeClass('open');
+    $('#markerInfoCard').fadeOut(200); 
+  });
+});
 /* ══ Hero 市集資訊卡 ════════════════════════════════════════ */
 (function initMarketCard() {
 
