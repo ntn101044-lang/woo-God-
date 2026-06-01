@@ -1,3 +1,12 @@
-instance/
-*.db
+# Python 暫存檔
 __pycache__/
+*.py[cod]
+*$py.class
+
+# 虛擬環境 (如果你有用的話)
+venv/
+.venv/
+env/
+
+# Mac 系統隱藏檔
+.DS_Store
