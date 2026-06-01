@@ -1381,8 +1381,8 @@ $(document).on('click', '#manageStallModal', function (e) {
 });
 
 $(document).on('click', '#deleteStallBtn', function () {
-  if (confirm('⚠️ WARNING: Are you sure you want to delete your stall? This action will erase all stall information!')) {
-    if (confirm("🛑 FINAL CONFIRMATION! Once deleted, your 'Product Data' will also disappear. Really delete?")) {
+  if (confirm(' WARNING: Are you sure you want to delete your stall? This action will erase all stall information!')) {
+    if (confirm(" FINAL CONFIRMATION! Once deleted, your 'Product Data' will also disappear. Really delete?")) {
       $.ajax({
         url: '/vendor/stall',
         method: 'DELETE',
@@ -1402,7 +1402,7 @@ $(document).on('click', '#deleteStallBtn', function () {
           }
         },
         error: function (xhr, status, error) {
-          console.error("🚨 Delete request failed:", error);
+          console.error("Delete request failed:", error);
           alert("Server error, please check console");
         }
       });

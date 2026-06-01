@@ -1687,3 +1687,83 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   攤主商品管理彈出視窗 (Product Management Modal) 排版完美優化
+   ========================================================================== */
+
+/* 1. 確保整個大 Modal 的高度與排版穩定 */
+#productMgmtModal .modal-lg {
+    max-height: 80vh;          /* 限制彈出視窗最高為螢幕高度的 80% */
+    display: flex;
+    flex-direction: column;    /* 讓內部的元件垂直排列 */
+    overflow: hidden;          /* 防止整個 Modal 自己爆開 */
+}
+
+/* 2. 上方「添加商品表單」的區塊：移除白色底色，固定不變形 */
+#productMgmtModal .add-product-form {
+    flex-shrink: 0;            /* 關鍵：防止這個表單區塊被壓縮或推擠 */
+    background: transparent;   /* 移除白色底色，變成透明 */
+    padding: 15px 0;           /* 調整上下內距，左右靠齊 */
+    margin-bottom: 15px;
+    border: none;              /* 移除邊框 */
+}
+
+/* 3. 為下方的「商品列表」加上垂直滑桿，並徹底禁止橫向軸 */
+#productMgmtModal .product-mgmt-list {
+    flex: 1;                   /* 自動填滿 Modal 剩餘的空間 */
+    max-height: 350px;         /* 限制列表最高高度 */
+    overflow-y: auto;          /* 超出時自動啟用垂直滑桿 */
+    overflow-x: hidden;         /* 徹底隱藏、禁止橫向滾動條 */
+    padding-right: 8px;        /* 留點右側內距，給滑桿空間 */
+}
+
+/* 4. 修改 Edit 小按鈕為白色底色 */
+#productMgmtModal .product-mgmt-list .btn-edit, 
+#productMgmtModal .product-mgmt-list button[id*="edit"] { 
+    background-color: #efb252 !important;
+    color: #333333 !important; /* 字體改深色確保看得到 */
+}
+
+/* 5. 處理點擊編輯時的輸入框與按鈕排版（防止 Save/Cancel 被擠到旁邊） */
+#productMgmtModal .product-mgmt-list .edit-mode-container,
+#productMgmtModal .product-mgmt-list li div,
+#productMgmtModal .product-mgmt-list .product-item {
+    display: flex;
+    flex-wrap: wrap;           /* 容許彈性換行 */
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+}
+
+/* 讓編輯時的修改框框變短，不吃滿整行 */
+#productMgmtModal .product-mgmt-list input[type="text"],
+#productMgmtModal .product-mgmt-list input[type="number"] {
+    max-width: 150px !important; /* 限制修改框框的最大寬度，讓它變短 */
+    display: inline-block;
+}
+
+/* 確保 Save 和 Cancel 按鈕有足夠空間，不會被擠爆 */
+#productMgmtModal .product-mgmt-list .btn-save,
+#productMgmtModal .product-mgmt-list .btn-cancel {
+    flex-shrink: 0;            /* 防止按鈕文字被壓扁 */
+    padding: 4px 8px;
+    font-size: 0.85rem;
+}
+
+/* 6. 美化垂直滑桿（讓滾動條看起來更精緻） */
+#productMgmtModal .product-mgmt-list::-webkit-scrollbar {
+    width: 6px;
+}
+#productMgmtModal .product-mgmt-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+#productMgmtModal .product-mgmt-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+} 
+ #productMgmtModal .product-mgmt-list::-webkit-scrollbar-thumb:hover {
+
+    background: #aaa;
+
+}
