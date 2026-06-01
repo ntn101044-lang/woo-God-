@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系統測試資料 (管理員介面) | Group 9</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            padding: 20px; 
+            background-color: #f4f7f6; 
+            color: #333;
+        }
+        h1 { 
+            border-bottom: 2px solid #ccc; 
+            padding-bottom: 10px; 
+        }
+        h2 { 
+            color: #4CAF50; 
+            margin-top: 40px; 
+            border-left: 5px solid #4CAF50; 
+            padding-left: 10px; 
+        }
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            max-width: 1200px; 
+            margin-bottom: 20px; 
+            background-color: #fff; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 12px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #4CAF50; 
+            color: white; 
+        }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        /* 攤位排隊燈號專屬樣式 */
+        .status-green { color: #2e7d32; font-weight: bold; }
+        .status-yellow { color: #f57f17; font-weight: bold; }
+        .status-red { color: #c62828; font-weight: bold; }
+        
+        /* 空資料提示樣式 */
+        .empty-msg { 
+            text-align: center; 
+            color: #888; 
+            font-style: italic; 
+        }
+    </style>
+</head>
+<body>
+    <h1>系統測試資料 (管理員全覽介面)</h1>
+    <p>提醒：此頁面為 Group 9 開發除錯與教授測試專用，包含全部 9 張資料表的即時狀態。</p>
+
+    <h2>1. 遊客 (Visitor) 清單</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>VisitorID</th>
+                <th>Account</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visitor in visitors %}
+            <tr>
+                <td>{{ visitor['VisitorID'] }}</td>
+                <td>{{ visitor['Account'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2" class="empty-msg">目前資料庫無遊客資料</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>2. 攤主 (Vendor) 清單</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>VendorID</th>
+                <th>VendorName</th>
+                <th>Phone</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vendor in vendors %}
+            <tr>
+                <td>{{ vendor['VendorID'] }}</td>
+                <td>{{ vendor['VendorName'] }}</td>
+                <td>{{ vendor['Phone'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="empty-msg">目前資料庫無攤主資料</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>3. 攤位 (Stall) 清單</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>StallID</th>
+                <th>StallName</th>
+                <th>ZoneType</th>
+                <th>Status (排隊燈號)</th>
+                <th>VendorID</th>
+                <th>EventID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stall in stalls %}
+            <tr>
+                <td>{{ stall['StallID'] }}</td>
+                <td>{{ stall['StallName'] }}</td>
+                <td>{{ stall['ZoneType'] }}</td>
+                <td class="
+                    {% if stall['Status'] == 'Green' %}status-green
+                    {% elif stall['Status'] == 'Yellow' %}status-yellow
+                    {% elif stall['Status'] == 'Red' %}status-red
+                    {% endif %}">
+                    {{ stall['Status'] }}
+                </td>
+                <td>{{ stall['VendorID'] }}</td>
+                <td>{{ stall['EventID'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="empty-msg">目前資料庫無攤位資料</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>4. 市集活動 (Event) 清單</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>EventID</th>
+                <th>EventName</th>
+                <th>StartDate</th>
+                <th>EndDate</th>
+                <th>MapImageURL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr>
+                <td>{{ event['EventID'] }}</td>
+                <td>{{ event['EventName'] }}</td>
+                <td>{{ event['StartDate'] }}</td>
+                <td>{{ event['EndDate'] }}</td>
+                <td>{{ event['MapImageURL'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="empty-msg">目前資料庫無活動資料</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>5. 號碼牌狀態 (Queue_Ticket)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>TicketNumber</th>
+                <th>WaitTime</th>
+                <th>Status</th>
+                <th>StallID</th>
+                <th>VisitorID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket['TicketNumber'] }}</td>
+                <td>{{ ticket['WaitTime'] }}</td>
+                <td>{{ ticket['Status'] }}</td>
+                <td>{{ ticket['StallID'] }}</td>
+                <td>{{ ticket['VisitorID'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="empty-msg">目前無人排隊</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>6. 系統商品總表 (Product)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ProductID</th>
+                <th>ProductName</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product['ProductID'] }}</td>
+                <td>{{ product['ProductName'] }}</td>
+                <td>${{ product['Price'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="empty-msg">無商品資料</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>7. 總訂單監控 (Order)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>OrderID</th>
+                <th>OrderTime</th>
+                <th>Status</th>
+                <th>PaymentMethod</th>
+                <th>VisitorID</th>
+                <th>StallID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order['OrderID'] }}</td>
+                <td>{{ order['OrderTime'] }}</td>
+                <td style="font-weight:bold;">{{ order['Status'] }}</td>
+                <td>{{ order['PaymentMethod'] }}</td>
+                <td>{{ order['VisitorID'] }}</td>
+                <td>{{ order['StallID'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="empty-msg">尚未有訂單產生</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>8. 攤位販售商品關聯 (Offers)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>StallID</th>
+                <th>ProductID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offer in offers %}
+            <tr>
+                <td>{{ offer['StallID'] }}</td>
+                <td>{{ offer['ProductID'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2" class="empty-msg">尚未設定攤位商品關聯</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>9. 訂單詳細品項 (Includes)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>OrderID</th>
+                <th>ProductID</th>
+                <th>Quantity</th>
+                <th>SoldPrice</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for include in includes %}
+            <tr>
+                <td>{{ include['OrderID'] }}</td>
+                <td>{{ include['ProductID'] }}</td>
+                <td>{{ include['Quantity'] }}</td>
+                <td>${{ include['SoldPrice'] }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="empty-msg">尚未有訂單明細</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

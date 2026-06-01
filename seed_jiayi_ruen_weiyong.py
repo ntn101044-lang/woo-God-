@@ -31,8 +31,10 @@ def seed_all_tables():
         )
         db.session.add(target_event)
         
-        visitor_1 = Visitor(account="taipei_user01@example.com")
-        visitor_1.set_password("welcome2026")
+        # 🎯 修改這裡：對齊前端 index.html 的遊客測試帳密
+        visitor_1 = Visitor(account="user01@example.com")
+        visitor_1.set_password("password123")
+        
         visitor_2 = Visitor(account="taipei_user02@example.com")
         visitor_2.set_password("hello2026")
         
@@ -44,18 +46,20 @@ def seed_all_tables():
         # 2. 如恩的防區：建立泰式奶茶攤位
         # ══════════════════════════════════════════════════════════════
         print("\n[2/5] 正在建立如恩泰式奶茶攤位...")
+        
+        # 🎯 修改這裡：對齊前端 index.html 的攤主測試帳密
         vendor_1 = Vendor(
-            account="ruen_tea@example.com",
+            account="vendor1",
             name="如恩正宗泰式奶茶",
             phone="0988777666"
         )
-        vendor_1.set_password("ruentea123") 
+        vendor_1.set_password("1234") 
         db.session.add(vendor_1)
         db.session.flush()
 
         stall_1 = Stall(
             stall_name="如恩泰奶 01 號攤",
-            zone_type="飲品區",
+            zone_type="Drinks",
             status="active",
             event_id=target_event.event_id,
             vendor_id=vendor_1.vendor_id
@@ -77,12 +81,14 @@ def seed_all_tables():
         # ══════════════════════════════════════════════════════════════
         print("\n[4/5] 🚀 正在模擬遊客線上抽號碼牌...")
         ticket_1 = QueueTicket(
+            ticket_number="1",
             status="waiting",
             expected_wait_time=15,
             stall_id=stall_1.stall_id,
             visitor_id=visitor_1.visitor_id
         )
         ticket_2 = QueueTicket(
+            ticket_number="2",
             status="waiting",
             expected_wait_time=30,
             stall_id=stall_1.stall_id,
@@ -104,8 +110,8 @@ def seed_all_tables():
         db.session.flush()
 
         # 2. 建立訂單
-        jiayi_o1 = Order(order_time=datetime.now().strftime("%Y-%m-%d %H:%M"), status="placed")
-        jiayi_o2 = Order(order_time=datetime.now().strftime("%Y-%m-%d %H:%M"), status="placed")
+        jiayi_o1 = Order(order_time=datetime.now().strftime("%Y-%m-%d %H:%M"), status="placed", visitor_id=visitor_1.visitor_id, stall_id=stall_1.stall_id)
+        jiayi_o2 = Order(order_time=datetime.now().strftime("%Y-%m-%d %H:%M"), status="placed", visitor_id=visitor_1.visitor_id, stall_id=stall_1.stall_id)
         db.session.add_all([jiayi_o1, jiayi_o2])
         db.session.flush()
 

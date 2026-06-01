@@ -1,54 +1,43 @@
 <!DOCTYPE html>
-<html lang="en"> <!--set 網頁語言-->
-<head>
+<html lang="en"> <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Woo~God</title>
-  <!--從 Google Fonts 下載字體-->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Oswald:wght@700&display=swap" rel="stylesheet">
 
-  <!-- jQuery UI CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='jquery-ui/jquery-ui.css') }}">
-  <!-- 主樣式 -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <!-- jQuery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <!-- 主 JS -->
   <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 
 </head>
 <body>
 
-<!-- ══ NAVBAR ════════════════════════════════════════════════ -->
 {% if role == 'visitor' %}
-<!-- Overlay sidebar遮罩 -->
 <div id="overlaySideber" class="overlaySideber"></div>
-
-<!-- Sidebar -->
 
 <aside id="sidebar" class="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">
       <span>⛩</span>
-      <span class="logo-text">市集通</span>
+      <span class="logo-text">Market Hub</span>
     </div>
     <button id="closeSidebar" class="close-btn">
       ✕
     </button>
   </div>
   <div class="sidebar-search">
-    <input type="text" placeholder="搜尋攤位..." class="search-input">
+    <input type="text" placeholder="Search stalls..." class="search-input">
   </div>
   
   <nav class="sidebar-menu">
-    <a href="#hotStallTrack" class="menu-item">🔥 排隊熱門</a>
-    <a href="#fewStallTrack" class="menu-item">😌 輕鬆入場</a>
-    <a href="#allStallGrid" class="menu-item">🏪 所有攤位</a>
-    <a href="#mapSection" class="menu-item">📍 市集地圖</a>
+    <a href="#hotStallTrack" class="menu-item">🔥 Popular Stalls</a>
+    <a href="#fewStallTrack" class="menu-item">😌 Quick Access</a>
+    <a href="#allStallGrid" class="menu-item">🏪 All Stalls</a>
+    <a href="#mapSection" class="menu-item">📍 Market Map</a>
   </nav>
 
-</aside>
 </aside>
 {% endif %}
   
@@ -58,97 +47,97 @@
     <span class="brand-name">Woo~God</span>
   </div>
 <div class="nav-right">
-  <!-- 👤 狀況 A：當前角色是遊客 (Visitor) -->
   {% if role == 'visitor' %}
-    <!-- ╔═ 【補齊】遊客登入後要顯示的帳號與登出按鈕 ═╗ -->
     <div id="visitorInfo" style="display: none; align-items: center; gap: 10px;">
-      <span id="visitorAccount" class="vendor-badge">👤 載入中...</span>
-      <button class="btn btn-ghost" id="visitorLogoutBtn">登出</button>
+      <span id="visitorAccount" class="vendor-badge">👤 Loading...</span>
+      <button class="btn btn-ghost" id="visitorLogoutBtn">Logout</button>
     </div>
 
-    <!-- 未登入時顯示的按鈕 -->
-    <button class="btn btn-outline" id="loginBtn">會員登入</button>
-    <button class="btn-vendor-login" id="vendorLoginTrigger">攤主登入</button>
+    <button class="btn btn-outline" id="loginBtn">Visitor Login</button>
+    <button class="btn-vendor-login" id="vendorLoginTrigger">Vendor Login</button>
 
-  <!-- 🏪 狀況 B：當前角色是攤主 (Vendor) -->
   {% elif role == 'vendor' %}
     <span class="vendor-badge">👤 {{ vendor_name }}</span>
-    <button class="btn btn-ghost" id="eventMgmtBtn">🗓 管理活動</button>
-    <button class="btn-vendor-login" id="logoutBtn">登出</button>
+    <button class="btn btn-ghost" id="eventMgmtBtn">🗓 Manage Events</button>
+    <button class="btn-vendor-login" id="logoutBtn">Logout</button>
   {% endif %}
 </div>
 </nav>
 
+<div class="modal-overlay" id="queueModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" id="closeQueueModal">✕</button>
+    <h2 class="modal-title">Queue Status</h2>
+    <div id="queueList" class="orders-list">
+      <p class="loading-text">Loading...</p>
+    </div>
+  </div>
+</div>
 
-<!-- ══ HERO ═══════════════════════════════════════════════════ -->
 {% if role == 'visitor' %}
- <!--這裡要改成動態生成Card 當前排隊人數多的前三名顯示-->
-<section class="hero">
+ <section class="hero">
   <div class="hero-bg"></div>
+ 
   <div class="hero-content">
     <p class="hero-eyebrow">Smart Market Guide System</p>
     <h1 class="hero-title">Visit<br><em>No more waiting</em></h1>
-    <p class="hero-sub">Real-time queue infor・map navigation・online ordering<br>make every market experience easier and more enjoyable!</p>
+    <p class="hero-sub">Real-time queue info・map navigation・online ordering<br>make every market experience easier and more enjoyable!</p>
     <div class="hero-actions">
-      <button class="btn btn-primary btn-lg">探索攤位</button>
-      <button class="btn btn-secondary btn-lg">查看地圖</button>
+      <button class="btn btn-primary btn-lg">Explore Stalls</button>
+      <button class="btn btn-secondary btn-lg">View Map</button>
     </div>
   </div>
   <div class="hero-visual">
   <div class="market-info-card">
 
-    <!-- 狀態指示燈 -->
     <div class="market-status-row">
       <span class="status-dot active"></span>
-      <span class="status-label" id="marketStatusLabel">市集進行中</span>
-      <span class="status-time" id="marketStatusTime">今日 10:00 – 18:00</span>
+      <span class="status-label" id="marketStatusLabel">Market Open</span>
+      <span class="status-time" id="marketStatusTime">Today 10:00 – 18:00</span>
     </div>
 
     <div class="market-divider"></div>
 
-    <!-- 統計數字 -->
     <div class="market-stats">
       <div class="stat-item">
         <span class="stat-num" id="statStalls">–</span>
-        <span class="stat-desc">活躍攤位</span>
+        <span class="stat-desc">Active Stalls</span>
       </div>
       <div class="stat-item">
         <span class="stat-num" id="statQueue">–</span>
-        <span class="stat-desc">總排隊人數</span>
+        <span class="stat-desc">Total in Queue</span>
       </div>
       <div class="stat-item">
         <span class="stat-num" id="statOrders">–</span>
-        <span class="stat-desc">今日訂單</span>
+        <span class="stat-desc">Today's Orders</span>
       </div>
     </div>
 
     <div class="market-divider"></div>
 
-    <!-- 下一場市集 / 倒數 -->
     <div class="market-next">
-      <p class="next-label">下一場市集</p>
-      <p class="next-date" id="nextMarketDate">2025 / 06 / 07（六）</p>
+      <p class="next-label">Next Market</p>
+      <p class="next-date" id="nextMarketDate">2025 / 06 / 07 (Sat)</p>
       <div class="countdown-row" id="countdownRow">
         <div class="countdown-item">
           <span class="cd-num" id="cdDays">–</span>
-          <span class="cd-unit">天</span>
+          <span class="cd-unit">Days</span>
         </div>
         <div class="countdown-sep">:</div>
         <div class="countdown-item">
           <span class="cd-num" id="cdHours">–</span>
-          <span class="cd-unit">時</span>
+          <span class="cd-unit">Hrs</span>
         </div>
         <div class="countdown-sep">:</div>
         <div class="countdown-item">
           <span class="cd-num" id="cdMins">–</span>
-          <span class="cd-unit">分</span>
+          <span class="cd-unit">Mins</span>
         </div>
       </div>
     </div>
 
-    <!-- 熱門攤位 mini list -->
     <div class="market-divider"></div>
-    <p class="next-label">🔥 最多人排隊</p>
+    <p class="next-label">🔥 Most Queued</p>
     <div class="mini-stall-list" id="miniStallList">
       <div class="mini-stall-skeleton"></div>
       <div class="mini-stall-skeleton"></div>
@@ -159,104 +148,98 @@
 </div>
 </section>
 
-<!-- ══ 🔥 熱門攤位（左右滑動）══════════════════════════════════ -->
 <section class="stalls-section">
   <div class="section-header">
-    <h2>🔥 排隊熱門</h2>
-    <span class="section-hint">人氣最旺的攤位</span>
+    <h2>🔥 Popular Stalls</h2>
+    <span class="section-hint">Stalls with the most visitors</span>
   </div>
   <div class="scroll-track-wrapper">
     <button class="scroll-arrow arrow-left" id="hotArrowLeft">‹</button>
     <div class="scroll-track" id="hotStallTrack">
-      <!-- JS 動態填入 -->
-      <div class="scroll-loading">載入中...</div>
+      <div class="scroll-loading">Loading...</div>
     </div>
     <button class="scroll-arrow arrow-right" id="hotArrowRight">›</button>
   </div>
 </section>
  
-<!-- ══ 😌 少人排隊（左右滑動）══════════════════════════════════ -->
 <section class="stalls-section">
   <div class="section-header">
-    <h2>😌 輕鬆入場</h2>
-    <span class="section-hint">幾乎不用等的攤位</span>
+    <h2>😌 Quick Access</h2>
+    <span class="section-hint">Stalls with almost no wait</span>
   </div>
   <div class="scroll-track-wrapper">
     <button class="scroll-arrow arrow-left" id="fewArrowLeft">‹</button>
     <div class="scroll-track" id="fewStallTrack">
-      <div class="scroll-loading">載入中...</div>
+      <div class="scroll-loading">Loading...</div>
     </div>
     <button class="scroll-arrow arrow-right" id="fewArrowRight">›</button>
   </div>
 </section>
  
-<!-- ══ 全部攤位 ════════════════════════════════════════════════ -->
 <section class="stalls-section">
   <div class="section-header">
-    <h2>🏪 所有攤位</h2>
+    <h2>🏪 All Stalls</h2>
     <div class="filter-tabs">
-      <button class="tab active" data-filter="all">全部</button>
-      <button class="tab" data-filter="food">美食</button>
-      <button class="tab" data-filter="craft">手作</button>
-      <button class="tab" data-filter="drink">飲品</button>
+      <button class="tab active" data-filter="all">All</button>
+      <button class="tab" data-filter="food">Food</button>
+      <button class="tab" data-filter="craft">Crafts</button>
+      <button class="tab" data-filter="drink">Drinks</button>
     </div>
   </div>
   <div class="stall-grid" id="allStallGrid">
-    <div class="scroll-loading">載入中...</div>
+    <div class="scroll-loading">Loading...</div>
   </div>
 </section>
 {% endif %}
 
-<!-- ══ 攤主面板 ════════════════════════════════════════════════ -->
 {% if role == 'vendor' %}
 
 <section class="vendor-panel">
   <div class="panel-header">
-    <h2>攤主後台</h2>
-    <p>歡迎回來，{{ vendor_name }}！</p>
+    <h2>Vendor Dashboard</h2>
+    <p>Welcome back, {{ vendor_name }}!</p>
   </div>
   <div class="panel-grid">
     <div class="panel-card" id="setupStallCard">
       <div class="panel-icon">🏪</div>
-      <h3 id="stallCardTitle">設立攤位</h3>
-      <p id="stallCardDesc">填寫攤位資訊，送審後即可開始營業</p>
+      <h3 id="stallCardTitle">Setup Stall</h3>
+      <p id="stallCardDesc">Fill in stall info to start business after approval</p>
       <div id="stallCardActionBtnContainer" style="width: 100%;">
-      <button class="btn btn-primary btn-full" id="openStallForm">建立攤位</button></div>
+      <button class="btn btn-primary btn-full" id="openStallForm">Create Stall</button></div>
     </div>
     <div class="panel-card">
       <div class="panel-icon">📦</div>
-      <h3>管理商品</h3>
-      <p>新增、修改攤位販售的商品</p>
-      <button class="btn btn-outline">前往管理</button>
+      <h3>Manage Products</h3>
+      <p>Add or edit products for sale</p>
+      <button class="btn btn-outline open-product-mgmt">Go to Manage</button>
     </div>
     <div class="panel-card">
       <div class="panel-icon">🧾</div>
-      <h3>訂單管理</h3>
-      <p>查看並處理顧客的訂單</p>
-      <button id='vendorOrdersBtn' class="btn btn-outline">查看訂單</button>
+      <h3>Order Management</h3>
+      <p>View and process customer orders</p>
+      <button id='vendorOrdersBtn' class="btn btn-outline">View Orders</button>
     </div>
     <div class="panel-card">
       <div class="panel-icon">🎟</div>
-      <h3>排隊狀況</h3>
-      <p>即時查看目前排隊人數</p>
-      <button class="btn btn-outline">查看排隊</button>
+      <h3>Queue Status</h3>
+      <p>View real-time queue numbers</p>
+      <button id="viewQueueBtn" class="btn btn-outline">View Queue</button>
     </div>
   </div>
-  <!-- Overlay logout遮罩 -->
   <div id="overlayLogout" class="overlayLogout"></div>
   
   <div id="logoutPage">
   <div style="display:flex; flex-direction:column; gap:1.2rem; width:100%;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;">確認登出</h2>
+      <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;">Confirm Logout</h2>
       <button id="closeLogout" class="modal-close" style="position:static;">✕</button>
     </div>
     <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
-      確定要登出攤主帳號嗎？
+      Are you sure you want to log out of the vendor account?
     </p>
     <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:0.5rem;">
-      <button id="closeLogout2" class="btn btn-secondary">取消</button>
-      <button id="Logout" class="btn-vendor-login">確認登出</button>
+      <button id="closeLogout2" class="btn btn-secondary">Cancel</button>
+      <button id="Logout" class="btn-vendor-login">Confirm Logout</button>
     </div>
   </div>
 </div>
@@ -267,250 +250,229 @@
 <div id="visitorLogoutPage">
   <div style="display:flex; flex-direction:column; gap:1.2rem; width:100%;">
     <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;">確認登出</h2>
+      <h2 style="font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:800;">Confirm Logout</h2>
       <button id="closeVisitorLogout" class="modal-close" style="position:static;">✕</button>
     </div>
     <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
-      確定要登出會員帳號嗎？
+      Are you sure you want to log out of the visitor account?
     </p>
     <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:0.5rem;">
-      <button id="closeVisitorLogout2" class="btn btn-secondary">取消</button>
-      <button id="confirmVisitorLogout" class="btn-vendor-login">確認登出</button>
+      <button id="closeVisitorLogout2" class="btn btn-secondary">Cancel</button>
+      <button id="confirmVisitorLogout" class="btn-vendor-login">Confirm Logout</button>
     </div>
   </div>
 </div>
 
-<!-- ╔═ 【全新追加】管理攤位 Modal ═╗ -->
 <div class="modal-overlay" id="manageStallModal">
   <div class="modal">
     <button class="modal-close" id="closeManageStall">✕</button>
-    <h2 class="modal-title">管理我的攤位</h2>
-    <p class="modal-sub">您可以進行攤位維護或關閉攤位</p>
+    <h2 class="modal-title">Manage My Stall</h2>
+    <p class="modal-sub">You can maintain or close your stall</p>
     
     <div style="margin: 2rem 0; text-align: center;">
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">若不需要營業，您可以選擇將攤位徹底刪除。</p>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">If you no longer wish to operate, you can completely delete your stall.</p>
     </div>
 
-    <!-- 🚨 刪除按鈕 -->
-    <button class="btn btn-full" id="deleteStallBtn" style="background-color: #e85b47; color: white;">❌ 刪除我的攤位</button>
+    <button class="btn btn-full" id="deleteStallBtn" style="background-color: #e85b47; color: white;">❌ Delete My Stall</button>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════
-     MODALS
-     ════════════════════════════════════════════════════════════ -->
- 
 <div class="modal-overlay" id="loginModal">
   <div class="modal">
     <button class="modal-close" id="closeModal">✕</button>
     
     <div class="modal-tabs">
-      <button class="vendor-tab modal-tab active" data-tab="vdr-login">攤主登入</button>
-      <button class="vendor-tab modal-tab" data-tab="vdr-register">攤主註冊</button>
+      <button class="vendor-tab modal-tab active" data-tab="vdr-login">Vendor Login</button>
+      <button class="vendor-tab modal-tab" data-tab="vdr-register">Vendor Register</button>
     </div>
     
     <div id="vendorLoginForm">
-      <h2 class="modal-title">攤主登入</h2>
-      <p class="modal-sub">登入後可管理攤位</p>
+      <h2 class="modal-title">Vendor Login</h2>
+      <p class="modal-sub">Login to manage your stall</p>
       <div class="form-group">
-        <label>帳號</label>
-        <input type="text" id="inputUsername" placeholder="輸入帳號" autocomplete="off">
+        <label>Account</label>
+        <input type="text" id="inputUsername" placeholder="Enter username" autocomplete="off">
       </div>
       <div class="form-group">
-        <label>密碼</label>
-        <input type="password" id="inputPassword" placeholder="輸入密碼">
+        <label>Password</label>
+        <input type="password" id="inputPassword" placeholder="Enter password">
       </div>
       <div class="form-error" id="loginError"></div>
-      <button class="btn btn-primary btn-full" id="submitLoginBtn">登入</button>
-      <p class="modal-hint">測試帳號：vendor1 ／ 密碼：1234</p>
+      <button class="btn btn-primary btn-full" id="submitLoginBtn">Login</button>
+      <p class="modal-hint">Test Account: vendor1 / Password: 1234</p>
     </div>
 
     <div id="vendorRegisterForm" style="display:none;">
-      <h2 class="modal-title">建立攤主帳號</h2>
-      <p class="modal-sub">填寫資料完成註冊（登入後即可設立攤位）</p>
+      <h2 class="modal-title">Create Vendor Account</h2>
+      <p class="modal-sub">Fill in details to register (Setup stall after login)</p>
       <div class="form-group">
-        <label>姓名</label>
-        <input type="text" id="vdrRegName" placeholder="例：阿婆米苔目 / 張小明" autocomplete="off">
+        <label>Name</label>
+        <input type="text" id="vdrRegName" placeholder="e.g., John Doe" autocomplete="off">
       </div>
       <div class="form-group">
-        <label>帳號</label>
-        <input type="text" id="vdrRegAccount" placeholder="設定登入帳號" autocomplete="off">
+        <label>Account</label>
+        <input type="text" id="vdrRegAccount" placeholder="Set login username" autocomplete="off">
       </div>
       <div class="form-group">
-        <label>密碼</label>
-        <input type="password" id="vdrRegPassword" placeholder="設定密碼">
+        <label>Password</label>
+        <input type="password" id="vdrRegPassword" placeholder="Set password">
       </div>
       <div class="form-group">
-        <label>聯絡電話</label>
-        <input type="text" id="vdrRegPhone" placeholder="例：0912345678" autocomplete="off">
+        <label>Phone</label>
+        <input type="text" id="vdrRegPhone" placeholder="e.g., 0912345678" autocomplete="off">
       </div>
       <div class="form-error" id="vdrRegError"></div>
-      <button class="btn btn-primary btn-full" id="submitVendorRegisterBtn">註冊並登入</button>
+      <button class="btn btn-primary btn-full" id="submitVendorRegisterBtn">Register & Login</button>
     </div>
 
   </div>
 </div>
-<!-- ── 建立攤位 ────────────────────────────────────────────── -->
 <div class="modal-overlay" id="stallModal">
   <div class="modal">
     <button class="modal-close" id="closeStallModal">✕</button>
-    <h2 class="modal-title">建立攤位申請</h2>
-    <p class="modal-sub">送出後需等待管理員審核</p>
+    <h2 class="modal-title">Stall Application</h2>
+    <p class="modal-sub">Pending admin approval after submission</p>
     <div class="form-group">
-      <label>攤位名稱</label>
-      <input type="text" id="stallName" placeholder="例：阿婆米苔目">
+      <label>Stall Name</label>
+      <input type="text" id="stallName" placeholder="e.g., Grandma's Noodles">
     </div>
     <div class="form-group">
-      <label>區域類型</label>
+      <label>Zone Type</label>
       <select id="zoneType">
-        <option value="">請選擇</option>
-        <option value="food">美食區</option>
-        <option value="drink">飲品區</option>
-        <option value="craft">手作區</option>
-        <option value="other">其他</option>
+        <option value="">Please select</option>
+        <option value="food">Food Zone</option>
+        <option value="drink">Drink Zone</option>
+        <option value="craft">Craft Zone</option>
+        <option value="other">Other</option>
       </select>
     </div>
     <div class="form-error" id="stallError"></div>
-    <button class="btn btn-primary btn-full" id="submitStall">送出申請</button>
+    <button class="btn btn-primary btn-full" id="submitStall">Submit Application</button>
   </div>
 </div>
  
-<!-- ╔═ 【新增】遊客登入 / 註冊 Modal ═╗ -->
 <div class="modal-overlay" id="visitorLoginModal">
   <div class="modal">
     <button class="modal-close" id="closeVisitorLogin">✕</button>
-    <!-- Tab 切換 -->
     <div class="modal-tabs">
-      <button class="modal-tab active" data-tab="login">會員登入</button>
-      <button class="modal-tab" data-tab="register">會員註冊</button>
+      <button class="modal-tab active" data-tab="login">Visitor Login</button>
+      <button class="modal-tab" data-tab="register">Visitor Register</button>
     </div>
-    <!-- 登入表單 -->
     <div id="visitorLoginForm">
-      <h2 class="modal-title">會員登入</h2>
-      <p class="modal-sub">登入後才能完成下單</p>
+      <h2 class="modal-title">Visitor Login</h2>
+      <p class="modal-sub">Login to place an order</p>
       <div class="form-group">
-        <label>帳號</label>
-        <input type="text" id="vLoginAccount" placeholder="輸入帳號" autocomplete="off">
+        <label>Account</label>
+        <input type="text" id="vLoginAccount" placeholder="Enter username" autocomplete="off">
       </div>
       <div class="form-group">
-        <label>密碼</label>
-        <input type="password" id="vLoginPassword" placeholder="輸入密碼">
+        <label>Password</label>
+        <input type="password" id="vLoginPassword" placeholder="Enter password">
       </div>
       <div class="form-error" id="vLoginError"></div>
-      <button class="btn btn-primary btn-full" id="submitVisitorLogin">登入並下單</button>
-      <p class="modal-hint">測試帳號：user01@example.com/user02@example.com ／ 密碼：password123/password456</p>
+      <button class="btn btn-primary btn-full" id="submitVisitorLogin">Login to Order</button>
+      <p class="modal-hint">Test Account: user01@example.com / Password: password123</p>
     </div>
-    <!-- 註冊表單 -->
     <div id="visitorRegisterForm" style="display:none">
-      <h2 class="modal-title">建立帳號</h2>
-      <p class="modal-sub">填寫資料完成註冊</p>
+      <h2 class="modal-title">Create Account</h2>
+      <p class="modal-sub">Fill in details to register</p>
       <div class="form-group">
-        <label>帳號</label>
-        <input type="text" id="vRegAccount" placeholder="設定帳號" autocomplete="off">
+        <label>Account</label>
+        <input type="text" id="vRegAccount" placeholder="Set username" autocomplete="off">
       </div>
       <div class="form-group">
-        <label>密碼</label>
-        <input type="password" id="vRegPassword" placeholder="設定密碼">
+        <label>Password</label>
+        <input type="password" id="vRegPassword" placeholder="Set password">
       </div>
       <div class="form-error" id="vRegError"></div>
-      <button class="btn btn-primary btn-full" id="submitVisitorRegister">註冊並登入</button>
+      <button class="btn btn-primary btn-full" id="submitVisitorRegister">Register & Login</button>
     </div>
   </div>
 </div>
  
-<!-- ╔═ 【新增】攤位商品 / 購物車 Modal ═╗ -->
 <div class="modal-overlay" id="stallProductModal">
   <div class="modal modal-lg">
     <button class="modal-close" id="closeStallProduct">✕</button>
-    <h2 class="modal-title" id="stallProductTitle">攤位商品</h2>
+    <h2 class="modal-title" id="stallProductTitle">Stall Products</h2>
     <p class="modal-sub" id="stallProductZone"></p>
  
-    <!-- 商品列表 -->
     <div id="productList" class="product-list"></div>
  
-    <!-- 購物車 -->
     <div class="cart-section">
-      <h3 class="cart-title">🛒 購物車</h3>
+      <h3 class="cart-title">🛒 Cart</h3>
       <div id="cartItems" class="cart-items">
-        <p class="cart-empty">尚未選擇任何商品</p>
+        <p class="cart-empty">No items selected</p>
       </div>
       <div class="cart-total">
-        合計：<span id="cartTotal">$0</span>
+        Total: <span id="cartTotal">$0</span>
       </div>
     </div>
  
     <div class="form-error" id="orderError"></div>
-    <button class="btn btn-primary btn-full" id="submitOrder">確認下單</button>
+    <button class="btn btn-primary btn-full" id="submitOrder">Confirm Order</button>
   </div>
 </div>
  
-<!-- ╔═ 【新增】遊客訂單查詢 Modal ═╗ -->
 <div class="modal-overlay" id="myOrdersModal">
   <div class="modal modal-lg">
     <button class="modal-close" id="closeMyOrders">✕</button>
-    <h2 class="modal-title">我的訂單</h2>
+    <h2 class="modal-title">My Orders</h2>
     <div id="myOrdersList" class="orders-list">
-      <p class="loading-text">載入中...</p>
+      <p class="loading-text">Loading...</p>
     </div>
   </div>
 </div>
  
-<!-- ╔═ 【新增】攤主訂單管理 Modal ═╗ -->
 <div class="modal-overlay" id="vendorOrdersModal">
   <div class="modal modal-lg">
     <button class="modal-close" id="closeVendorOrders">✕</button>
-    <h2 class="modal-title">訂單管理</h2>
+    <h2 class="modal-title">Order Management</h2>
     <div id="vendorOrdersList" class="orders-list">
-      <p class="loading-text">載入中...</p>
+      <p class="loading-text">Loading...</p>
     </div>
   </div>
 </div>
  
  
-<!-- ╔═ 遊客浮動訂單按鈕（右下角）═╗ -->
 <div id="visitorFab" class="visitor-fab" style="display:none">
-  <button id="fabOrderBtn" class="fab-btn" title="查看我的訂單">
+  <button id="fabOrderBtn" class="fab-btn" title="View My Orders">
     <span class="fab-icon">🧾</span>
     <span id="fabBadge" class="fab-badge" style="display:none">0</span>
   </button>
 </div>
  
-<!-- ╔═ 攤主商品管理 Modal ═╗ -->
 <div class="modal-overlay" id="productMgmtModal">
   <div class="modal modal-lg">
     <button class="modal-close" id="closeProductMgmt">✕</button>
-    <h2 class="modal-title">管理商品</h2>
+    <h2 class="modal-title">Manage Products</h2>
     <p class="modal-sub" id="productMgmtStallName"></p>
  
-    <!-- 新增商品表單 -->
     <div class="add-product-form">
       <div class="form-row">
         <div class="form-group" style="flex:2">
-          <label>商品名稱</label>
-          <input type="text" id="newProductName" placeholder="例：珍珠奶茶">
+          <label>Product Name</label>
+          <input type="text" id="newProductName" placeholder="e.g., Boba Tea">
         </div>
         <div class="form-group" style="flex:1">
-          <label>價格（$）</label>
+          <label>Price ($)</label>
           <input type="number" id="newProductPrice" placeholder="60" min="0">
         </div>
-        <button class="btn btn-primary" id="addProductBtn" style="align-self:flex-end">新增</button>
+        <button class="btn btn-primary" id="addProductBtn" style="align-self:flex-end">Add</button>
       </div>
       <div class="form-error" id="productError"></div>
     </div>
  
-    <!-- 商品列表 -->
     <div id="productMgmtList" class="product-mgmt-list">
-      <p class="loading-text">載入中...</p>
+      <p class="loading-text">Loading...</p>
     </div>
   </div>
 </div>
 
 
-<!-- ══ 地圖區塊 ══════════════════════════════════════════════ -->
 {% if role == 'visitor' %}
 <section class="map-section" id="mapSection">
   <div class="section-header">
-    <h2>📍 市集地圖</h2>
+    <h2>📍 Market Map</h2>
   </div>
   <div class="map-card">
 
@@ -519,52 +481,52 @@
       <p class="map-label">Market Navigation</p>
     </div>
     <button class="map-full-btn">
-      🔍 查看完整地圖
+      🔍 View Full Map
     </button>
   </div>
-<!--查看完整地圖-->
-  <div class="map-placeholder">
-    <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖">
+<div class="map-placeholder">
+    <img src="{{ url_for('static', filename='image/Map.png') }}" alt="Market Map">
   </div>
   <div class="modal-overlay" id="fullMapModal">
     <div class="modal" style="max-width: 98%; width: 1300px; height: 95vh;">
       <button class="modal-close" id="closeFullMap">✕</button>
-      <h2 class="modal-title">📍 市集完整導覽</h2>
+      <h2 class="modal-title">📍 Full Market Navigation</h2>
 
       <div class="modal-body map-modal-container">
         <div class="map-view-area">
           <div class="map-wrapper">
-            <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖">
+            <img src="{{ url_for('static', filename='image/Map.png') }}" alt="Market Map">
 
             <div class="map-marker-area" id="marker-mexican" 
                 style="top: 11.5%; left: 13%; width: 13%; height: 5.5%;" 
-                data-title="墨西哥捲餅" data-desc="道地墨西哥風味，特製莎莎醬與鮮嫩肉片。"></div>
+                data-title="Mexican Burritos" data-desc="Authentic Mexican flavor with special salsa and tender meat."></div>
 
             <div class="map-marker-area" id="marker-miso" 
                 style="top: 11.5%; left: 36%; width: 13%; height: 5.5%;" 
-                data-title="阿婆米苔目" data-desc="傳承三代的純米手工製作，Ｑ彈有勁的麵體搭配獨門肉燥。"></div>
+                data-title="Grandma's Rice Noodles" data-desc="Three generations of handmade rice noodles, chewy texture with unique minced meat."></div>
 
             <div class="map-marker-area" id="marker-drink" 
                 style="top: 11.5%; left: 59.5%; width: 13.5%; height: 5.5%;" 
-                data-title="手作珍珠奶茶" data-desc="使用在地水果與手工熬製糖漿，夏日最解渴的選擇。"></div>
+                data-title="Handmade Boba Tea" data-desc="Using local fruits and handmade syrup, the most thirst-quenching choice for summer."></div>
 
             <div class="map-marker-area" id="marker-tea" 
                 style="top: 78.2%; left: 14.2%; width: 12%; height: 5.5%;" 
-                data-title="台灣茶舖" data-desc="嚴選台灣高山茶葉，現場現泡。"></div>
+                data-title="Taiwan Tea Shop" data-desc="Carefully selected Taiwan high mountain tea leaves, freshly brewed on site."></div>
 
             <div class="map-marker-area" id="marker-craft" 
                 style="top: 78.2%; left: 40.2%; width: 13%; height: 5.5%;" 
-                data-title="現烤串串香" data-desc="炭火現烤美食，秘製香料讓你回味無窮。"></div>
+                data-title="Freshly Grilled Skewers" data-desc="Charcoal-grilled food with a secret spice mix that leaves an endless aftertaste."></div>
 
             <div class="map-marker-area" id="marker-jewelry" 
                 style="top: 78.2%; left: 67.8%; width: 13.5%; height: 5.5%;" 
-                data-title="文青手作飾品" data-desc="原創設計師的飾品、香氛與手繪明信片。"></div>
+                data-title="Artisan Jewelry" data-desc="Original designer jewelry, fragrances, and hand-drawn postcards."></div>
 
             <div id="markerInfoCard" class="marker-info-card">
               <button class="card-close">✕</button>
               <h3 class="card-title"></h3>
               <p class="card-text"></p>
             </div>
+      
           </div>
         </div>
       </div>
@@ -573,36 +535,33 @@
 </section>
 
 {% endif %}
-<!-- ══ Event 管理 MODAL ════════════════════════════════════════ -->
 <div class="modal-overlay" id="eventMgmtModal">
   <div class="modal modal-lg">
     <button class="modal-close" id="closeEventMgmt">✕</button>
-    <h2 class="modal-title">🗓 市集活動管理</h2>
-    <p class="modal-sub">新增或編輯市集活動時間</p>
+    <h2 class="modal-title">🗓 Market Event Management</h2>
+    <p class="modal-sub">Add or edit market event times</p>
 
-    <!-- 新增表單 -->
     <div class="add-product-form">
       <div class="form-row" style="gap:10px; flex-wrap:wrap;">
         <div class="form-group" style="flex:2; min-width:140px;">
-          <label>活動名稱</label>
-          <input type="text" id="newEventName" placeholder="例：2025 夏季市集">
+          <label>Event Name</label>
+          <input type="text" id="newEventName" placeholder="e.g., 2025 Summer Market">
         </div>
         <div class="form-group" style="flex:1; min-width:120px;">
-          <label>開始日期</label>
+          <label>Start Date</label>
           <input type="date" id="newEventStart">
         </div>
         <div class="form-group" style="flex:1; min-width:120px;">
-          <label>結束日期</label>
+          <label>End Date</label>
           <input type="date" id="newEventEnd">
         </div>
       </div>
       <div class="form-error" id="eventError"></div>
-      <button class="btn btn-primary" id="addEventBtn">＋ 新增活動</button>
+      <button class="btn btn-primary" id="addEventBtn">＋ Add Event</button>
     </div>
 
-    <!-- 活動列表 -->
     <div id="eventMgmtList">
-      <p class="loading-text">載入中...</p>
+      <p class="loading-text">Loading...</p>
     </div>
   </div>
 </div>
