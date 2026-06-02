@@ -378,7 +378,7 @@ def seed_all_tables():
         db.session.commit()
         
         print("==================================================")
-        print("Successful! 全系統資料已建立！")
+        print("Successful!")
         print("==================================================")
 
 if __name__ == '__main__':
