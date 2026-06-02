@@ -313,12 +313,20 @@ $('#savePositionBtn').on('click', function() {
 
 // 🚩 定義 1-6 號在地圖上的位置 (百分比)
 const STALL_POSITIONS = {
-    1: { top: '30%', left: '20%' },
-    2: { top: '30%', left: '50%' },
-    3: { top: '30%', left: '80%' },
-    4: { top: '70%', left: '20%' },
-    5: { top: '70%', left: '50%' },
-    6: { top: '70%', left: '80%' }
+    1:  { top:'25%', left:'15%' },
+    2:  { top:'25%', left:'35%' },
+    3:  { top:'25%', left:'55%' },
+    4:  { top:'25%', left:'75%' },
+
+    5:  { top:'50%', left:'15%' },
+    6:  { top:'50%', left:'35%' },
+    7:  { top:'50%', left:'55%' },
+    8:  { top:'50%', left:'75%' },
+
+    9:  { top:'75%', left:'15%' },
+    10: { top:'75%', left:'35%' },
+    11: { top:'75%', left:'55%' },
+    12: { top:'75%', left:'75%' }
 };
 
 function renderMapMarkers() {
@@ -333,7 +341,7 @@ function renderMapMarkers() {
         const $modalLayer = $('#fullMapModal .stall-markers-layer');
         $modalLayer.empty();
 
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= Object.keys(STALL_POSITIONS).length; i++) {
             const pos = STALL_POSITIONS[i];
             const stall = stallList.find(s => s.stall_number === i);
 
@@ -373,7 +381,7 @@ function renderMapMarkers() {
                     $('#markerInfoCard')
                         .css({ top: cardTop, left: cardLeft })
                         .find('.card-title').text(s.name).end()
-                        .find('.card-text').text('Type：' + s.zone + '　Queue：' + s.queue + ' 人').end()
+                        .find('.card-text').text('Type：' + s.zone + '　Queue：' + s.queue + ' people in line').end()
                         .fadeIn(200);
                 });
             } else {

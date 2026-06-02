@@ -217,11 +217,11 @@ def select_stall_position():
     try:
         chosen_number = int(data.get('stall_number'))
     except (TypeError, ValueError):
-        return jsonify({'success': False, 'message': '無效的位置編號'}), 400
+        return jsonify({'success': False, 'message': 'Invalid stall position number'}), 400
 
-    # 2. 驗證數字範圍 (1~6)
-    if chosen_number not in range(1, 7):
-        return jsonify({'success': False, 'message': '請選擇 1~6 號位置'}), 400
+    # 2. 驗證數字範圍 (1~12)
+    if chosen_number not in range(1, 13):
+        return jsonify({'success': False, 'message': 'Please select a position from 1 to 12'}), 400
 
     try:
         # 3. 【整合點一】檢查攤主是否已經「建立」過攤位資料
@@ -230,7 +230,7 @@ def select_stall_position():
         if not stall:
             return jsonify({
                 'success': False, 
-                'message': '尚未偵測到您的攤位資訊，請先完成「建立攤位」步驟。'
+                'message': 'No stall information found. Please create your stall first'
             }), 404
 
         # 4. 【整合點二】檢查該位置是否已被「其他人」佔用
@@ -238,7 +238,7 @@ def select_stall_position():
         if existing and existing.vendor_id != vendor_id:
             return jsonify({
                 'success': False, 
-                'message': f'位置 {chosen_number} 已被「{existing.stall_name}」佔用囉！'
+                'message': f'Position {chosen_number}is already occupied by "{existing.stall_name}"'
             }), 409
 
         # 5. 更新攤位位置
@@ -247,13 +247,13 @@ def select_stall_position():
         
         return jsonify({
             'success': True, 
-            'message': f'成功進駐 {chosen_number} 號位置！'
+            'message': f'Successfully assigned to position {chosen_number} '
         })
 
     except Exception as e:
         db.session.rollback()
-        print(f"選位系統錯誤: {str(e)}")
-        return jsonify({'success': False, 'message': '系統繁忙，請稍後再試'}), 500
+        print(f"A stall position selection error occurred: {str(e)}")
+        return jsonify({'success': False, 'message': 'The system is busy. Please try again later'}), 500
 
 @app.route('/vendor/stall', methods=['GET', 'POST', 'DELETE']) # 🎯 1. 加上 DELETE 允許
 @vendor_required
