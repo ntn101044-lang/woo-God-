@@ -56,8 +56,6 @@ class Stall(db.Model):
     products      = db.relationship('Product', secondary=offers, backref='stalls', lazy=True)
     queue_tickets = db.relationship('QueueTicket', backref='stall', lazy=True)
     orders        = db.relationship('Order', backref='stall', lazy=True)
-    # 新增這行：記錄這是 1~6 號中的哪一個位置
-    # unique=True 確保同一個號碼不會被兩個攤位選中
     stall_number  = db.Column(db.Integer, unique=True, nullable=True)
 
 class Visitor(db.Model):
@@ -669,7 +667,7 @@ def admin_dashboard():
     try:
         all_visitors = [{'VisitorID': v.visitor_id, 'Account': v.account} for v in Visitor.query.all()]
         all_vendors = [{'VendorID': v.vendor_id, 'VendorName': v.name, 'Phone': v.phone} for v in Vendor.query.all()]
-        all_stalls = [{'StallID': s.stall_id, 'StallName': s.stall_name, 'ZoneType': s.zone_type, 'Status': s.status, 'VendorID': s.vendor_id, 'EventID': s.event_id} for s in Stall.query.all()]
+        all_stalls = [{'StallID': s.stall_id, 'StallName': s.stall_name, 'ZoneType': s.zone_type, 'Status': s.status, 'VendorID': s.vendor_id, 'EventID': s.event_id, "StallNumber": s.stall_number} for s in Stall.query.all()]
         all_events = [{'EventID': e.event_id, 'EventName': e.event_name, 'StartDate': e.start_date, 'EndDate': e.end_date, 'MapImageURL': e.map_image_url} for e in Event.query.all()]
         all_tickets = [{'TicketNumber': t.ticket_number, 'WaitTime': t.expected_wait_time, 'Status': t.status, 'StallID': t.stall_id, 'VisitorID': t.visitor_id} for t in QueueTicket.query.all()]
         all_products = [{'ProductID': p.product_id, 'ProductName': p.name, 'Price': p.price} for p in Product.query.all()]

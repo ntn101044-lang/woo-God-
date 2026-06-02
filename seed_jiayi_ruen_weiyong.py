@@ -62,7 +62,8 @@ def seed_all_tables():
             zone_type="Drinks",
             status="active",
             event_id=target_event.event_id,
-            vendor_id=vendor_1.vendor_id
+            vendor_id=vendor_1.vendor_id,
+            stall_number=1
         )
         db.session.add(stall_1)
         db.session.flush()
