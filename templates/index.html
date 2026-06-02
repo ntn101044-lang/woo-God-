@@ -346,6 +346,24 @@
         <option value="other">Other</option>
       </select>
     </div>
+    <div class="stall-position-picker">
+      <label>🚩 選擇擺攤位置 (1-12 號位)</label>
+      <div class="position-grid" id="positionGrid">
+          <button type="button" class="pos-btn" data-num="1">1</button>
+          <button type="button" class="pos-btn" data-num="2">2</button>
+          <button type="button" class="pos-btn" data-num="3">3</button>
+          <button type="button" class="pos-btn" data-num="4">4</button>
+          <button type="button" class="pos-btn" data-num="5">5</button>
+          <button type="button" class="pos-btn" data-num="6">6</button>
+          <button type="button" class="pos-btn" data-num="7">7</button>
+          <button type="button" class="pos-btn" data-num="8">8</button>
+          <button type="button" class="pos-btn" data-num="9">9</button>
+          <button type="button" class="pos-btn" data-num="10">10</button>
+          <button type="button" class="pos-btn" data-num="11">11</button>
+          <button type="button" class="pos-btn" data-num="12">12</button>
+      </div>
+    </div>
+
     <div class="form-error" id="stallError"></div>
     <button class="btn btn-primary btn-full" id="submitStall">Submit Application</button>
   </div>
@@ -484,54 +502,35 @@
       🔍 View Full Map
     </button>
   </div>
-<div class="map-placeholder">
-    <img src="{{ url_for('static', filename='image/Map.png') }}" alt="Market Map">
-  </div>
-  <div class="modal-overlay" id="fullMapModal">
-    <div class="modal" style="max-width: 98%; width: 1300px; height: 95vh;">
-      <button class="modal-close" id="closeFullMap">✕</button>
-      <h2 class="modal-title">📍 Full Market Navigation</h2>
+<!--查看完整地圖-->
+<div class="map-placeholder" style="position: relative; display: inline-block; width: 100%;">
+  <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖" style="display: block; width: 100%; height: auto;">
+  
+  <div class="stall-markers-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none;"></div>
+</div>
 
-      <div class="modal-body map-modal-container">
-        <div class="map-view-area">
-          <div class="map-wrapper">
-            <img src="{{ url_for('static', filename='image/Map.png') }}" alt="Market Map">
+<div class="modal-overlay" id="fullMapModal">
+  <div class="modal" style="max-width: 98%; width: 1300px; height: 95vh;">
+    <button class="modal-close" id="closeFullMap">✕</button>
+    <h2 class="modal-title">📍Market Full Map</h2>
 
-            <div class="map-marker-area" id="marker-mexican" 
-                style="top: 11.5%; left: 13%; width: 13%; height: 5.5%;" 
-                data-title="Mexican Burritos" data-desc="Authentic Mexican flavor with special salsa and tender meat."></div>
+    <div class="modal-body map-modal-container">
+      <div class="map-view-area">
+        <div class="map-wrapper" style="position: relative; display: inline-block; width: 100%;">
+          <img src="{{ url_for('static', filename='image/Map.png') }}" alt="市集地圖" style="display: block; width: 100%; height: auto;">
+          
+          <div class="stall-markers-layer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;" id= "modalMarkersLayer"></div>
 
-            <div class="map-marker-area" id="marker-miso" 
-                style="top: 11.5%; left: 36%; width: 13%; height: 5.5%;" 
-                data-title="Grandma's Rice Noodles" data-desc="Three generations of handmade rice noodles, chewy texture with unique minced meat."></div>
-
-            <div class="map-marker-area" id="marker-drink" 
-                style="top: 11.5%; left: 59.5%; width: 13.5%; height: 5.5%;" 
-                data-title="Handmade Boba Tea" data-desc="Using local fruits and handmade syrup, the most thirst-quenching choice for summer."></div>
-
-            <div class="map-marker-area" id="marker-tea" 
-                style="top: 78.2%; left: 14.2%; width: 12%; height: 5.5%;" 
-                data-title="Taiwan Tea Shop" data-desc="Carefully selected Taiwan high mountain tea leaves, freshly brewed on site."></div>
-
-            <div class="map-marker-area" id="marker-craft" 
-                style="top: 78.2%; left: 40.2%; width: 13%; height: 5.5%;" 
-                data-title="Freshly Grilled Skewers" data-desc="Charcoal-grilled food with a secret spice mix that leaves an endless aftertaste."></div>
-
-            <div class="map-marker-area" id="marker-jewelry" 
-                style="top: 78.2%; left: 67.8%; width: 13.5%; height: 5.5%;" 
-                data-title="Artisan Jewelry" data-desc="Original designer jewelry, fragrances, and hand-drawn postcards."></div>
-
-            <div id="markerInfoCard" class="marker-info-card">
-              <button class="card-close">✕</button>
-              <h3 class="card-title"></h3>
-              <p class="card-text"></p>
-            </div>
-      
+          <div id="markerInfoCard" class="marker-info-card" style="z-index: 10;">
+            <button class="card-close">✕</button>
+            <h3 class="card-title"></h3>
+            <p class="card-text"></p>
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 </section>
 
 {% endif %}

@@ -59,7 +59,8 @@ def seed_all_tables():
             zone_type="drink",
             status="active",
             event_id=target_event.event_id,
-            vendor_id=vendor_1.vendor_id
+            vendor_id=vendor_1.vendor_id,
+            stall_number=1
         )
         db.session.add(stall_1)
         db.session.flush()
@@ -78,7 +79,8 @@ def seed_all_tables():
             zone_type="food",
             status="active",
             event_id=target_event.event_id,
-            vendor_id=vendor_2.vendor_id
+            vendor_id=vendor_2.vendor_id,
+            stall_number=2
         )
 
         db.session.add(stall_2)
@@ -101,7 +103,8 @@ def seed_all_tables():
             zone_type="food",
             status="active",
             event_id=target_event.event_id,
-            vendor_id=vendor_3.vendor_id
+            vendor_id=vendor_3.vendor_id,
+            stall_number=3
         )
 
         db.session.add(stall_3)
@@ -124,7 +127,8 @@ def seed_all_tables():
             zone_type="drink",
             status="active",
             event_id=target_event.event_id,
-            vendor_id=vendor_4.vendor_id
+            vendor_id=vendor_4.vendor_id,
+            stall_number=4
         )
 
         db.session.add(stall_4)
@@ -147,7 +151,8 @@ def seed_all_tables():
             zone_type="drink",
             status="active",
             event_id=target_event.event_id,
-            vendor_id=vendor_5.vendor_id
+            vendor_id=vendor_5.vendor_id,
+            stall_number=5
         )
 
         db.session.add(stall_5)
@@ -170,7 +175,8 @@ def seed_all_tables():
             zone_type="craft",
             status="active",
             event_id=target_event.event_id,
-            vendor_id=vendor_6.vendor_id
+            vendor_id=vendor_6.vendor_id,
+            stall_number=6
         )
 
         db.session.add(stall_6)
@@ -193,7 +199,8 @@ def seed_all_tables():
             zone_type="craft",
             status="active",
             event_id=target_event.event_id,
-            vendor_id=vendor_7.vendor_id
+            vendor_id=vendor_7.vendor_id,
+            stall_number=7
         )
 
         db.session.add(stall_7)

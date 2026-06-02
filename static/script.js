@@ -218,6 +218,18 @@ $(function () {
   $('#openStallForm').on('click', function () {
     openModal('#stallModal');
     $('#stallName').trigger('focus');
+    // ← 新增：呼叫後端取得已佔用號碼，disable 對應按鈕
+    $.get('/stalls', function(data) {
+        const occupied = (data.stalls || [])
+            .map(s => s.stall_number)
+            .filter(n => n !== null && n !== undefined);
+        
+        $('.pos-btn').prop('disabled', false).removeClass('disabled');
+        occupied.forEach(function(num) {
+            $(`.pos-btn[data-num="${num}"]`).prop('disabled', true).addClass('disabled').text(num + ' 🔒');
+        });
+    });
+
   });
 
   $('#closeStallModal').on('click', () => closeModal('#stallModal'));
@@ -228,6 +240,7 @@ $(function () {
   $('#submitStall').on('click', function () {
     const stall_name = $('#stallName').val().trim();
     const zone_type  = $('#zoneType').val();
+    const selectedPosition = $('.pos-btn.active').data('num') || null;
     $('#stallError').text('');
 
     if (!stall_name) { $('#stallError').text('Please enter stall name'); return; }
@@ -239,7 +252,7 @@ $(function () {
       url: '/vendor/stall',
       method: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify({ stall_name, zone_type }),
+      data: JSON.stringify({ stall_name, zone_type, stall_number: selectedPosition }),
       success: function (data) {
         if (data.success) {
           closeModal('#stallModal');
@@ -257,7 +270,162 @@ $(function () {
     });
   });
 
-  /* ══ Visitor Login / Register Modal ═══════════════════════════ */
+  /*攤主選位置及地圖更新*/
+  /* ══ 攤位位置選取 (1-6 號位) ══════════════════════════════════ */
+// 1. 處理位置按鈕點擊切換樣式
+$(document).on('click', '.pos-btn', function() {
+    if($(this).hasClass('disabled')) return; // 如果被別人選走了就不能點
+
+    // 移除其他按鈕的 active 狀態，並把當前點擊的加上 active
+    $('.pos-btn').removeClass('active');
+    $(this).addClass('active');
+    
+    // 取得號碼 (之後送給後端用)
+    const selectedNum = $(this).data('num');
+    console.log("當前選擇位置：", selectedNum);
+});
+
+// 2. 假設你有一個「儲存位置」的按鈕，或者整合在提交表單裡
+$('#savePositionBtn').on('click', function() {
+    const activeBtn = $('.pos-btn.active');
+    if(activeBtn.length === 0) {
+        alert('請先選擇一個位置！');
+        return;
+    }
+
+    const num = activeBtn.data('num');
+
+    $.ajax({
+        url: '/vendor/select_stall_position', // 對應你在 app.py 寫的路由
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ stall_number: num }),
+        success: function(res) {
+            if(res.success) {
+                showToast(res.message);
+                // 可選擇是否要 reload 或更新地圖顯示
+            } else {
+                alert(res.message);
+            }
+        }
+    });
+});
+
+// 🚩 定義 1-6 號在地圖上的位置 (百分比)
+const STALL_POSITIONS = {
+    1:  { top:'25%', left:'15%' },
+    2:  { top:'25%', left:'35%' },
+    3:  { top:'25%', left:'55%' },
+    4:  { top:'25%', left:'75%' },
+
+    5:  { top:'50%', left:'15%' },
+    6:  { top:'50%', left:'35%' },
+    7:  { top:'50%', left:'55%' },
+    8:  { top:'50%', left:'75%' },
+
+    9:  { top:'75%', left:'15%' },
+    10: { top:'75%', left:'35%' },
+    11: { top:'75%', left:'55%' },
+    12: { top:'75%', left:'75%' }
+};
+
+function renderMapMarkers() {
+    $.get('/stalls', function(data) {
+        const stallList = data.stalls || [];
+
+        // 頁面預覽 layer（只放標記，不綁點擊事件）
+        const $previewLayer = $('.map-placeholder .stall-markers-layer');
+        $previewLayer.empty();
+
+        // 完整地圖 Modal layer（有點擊互動）
+        const $modalLayer = $('#fullMapModal .stall-markers-layer');
+        $modalLayer.empty();
+
+        for (let i = 1; i <= Object.keys(STALL_POSITIONS).length; i++) {
+            const pos = STALL_POSITIONS[i];
+            const stall = stallList.find(s => s.stall_number === i);
+
+            // 預覽用標記
+            const $previewMarker = $('<div class="map-marker">').text(i);
+            $previewMarker.css({ top: pos.top, left: pos.left });
+            if (stall) {
+                $previewMarker.addClass('occupied');
+            } else {
+                $previewMarker.addClass('empty');  // ← 空位加 class
+            }
+            $previewLayer.append($previewMarker);
+
+            // Modal 用標記
+            const $modalMarker = $('<div class="map-marker">').text(i);
+            $modalMarker.css({ top: pos.top, left: pos.left });
+            if (stall) {
+                $modalMarker.addClass('occupied');
+                $modalMarker.attr('title', stall.stall_name);
+                $modalMarker.data('stall', {
+                    name: stall.stall_name,
+                    zone: stall.zone_type,
+                    queue: stall.queue_count
+                });
+                $modalMarker.on('click', function(e) {
+                    e.stopPropagation();
+                    const s = $(this).data('stall');
+                    const markerPos = $(this).position();
+                    const markerW = $(this).outerWidth();
+                    const markerH = $(this).outerHeight();
+                    const wrapperW = $(this).closest('.map-wrapper').outerWidth();
+                    let cardLeft = markerPos.left + markerW + 10;
+                    if (cardLeft + 280 > wrapperW) {
+                        cardLeft = markerPos.left - 280 - 10;
+                    }
+                    const cardTop = markerPos.top - markerH;
+                    $('#markerInfoCard')
+                        .css({ top: cardTop, left: cardLeft })
+                        .find('.card-title').text(s.name).end()
+                        .find('.card-text').text('Type：' + s.zone + '　Queue：' + s.queue + ' people in line').end()
+                        .fadeIn(200);
+                });
+            } else {
+                $modalMarker.addClass('empty');
+            }
+            $modalLayer.append($modalMarker);
+        }
+    });
+}
+
+// 開啟 Modal 時啟動定時刷新，關閉時停止
+  let mapRefreshInterval = null;
+
+  $('.map-full-btn').on('click', function() {
+      $('.map-placeholder .stall-markers-layer').hide();
+      openModal('#fullMapModal');
+      if (mapRefreshInterval) clearInterval(mapRefreshInterval);
+      setTimeout(renderMapMarkers, 300);
+      mapRefreshInterval = setInterval(renderMapMarkers, 10000);
+  });
+
+  $('#closeFullMap').on('click', function() {
+      closeModal('#fullMapModal');
+      $('.map-placeholder .stall-markers-layer').show();
+      if (mapRefreshInterval) { clearInterval(mapRefreshInterval); mapRefreshInterval = null; }
+  });
+
+  $('#fullMapModal').on('click', function(e) {
+      if ($(e.target).is('#fullMapModal')) {
+          closeModal('#fullMapModal');
+          $('.map-placeholder .stall-markers-layer').show();
+          if (mapRefreshInterval) { clearInterval(mapRefreshInterval); mapRefreshInterval = null; }
+      }
+  });
+
+  renderMapMarkers();
+
+  $(document).on('click', '.card-close', function() {
+      $('#markerInfoCard').fadeOut(150);
+  });
+
+
+
+  /* ══ 遊客登入 / 註冊 Modal ═══════════════════════════════════ */
 
   $('#visitorLoginBtn').on('click', function () {
     pendingOrder = null;
@@ -1125,54 +1293,19 @@ function scrollToMap() {
 }
 
 $(function() { 
-  $(document).on('click', '.map-marker-area', function(e) {
-    e.stopPropagation(); 
-    
-    const title = $(this).data('title');
-    const desc = $(this).data('desc');
-    const $card = $('#markerInfoCard');
-
-    $card.find('.card-title').text(title);
-    $card.find('.card-text').text(desc);
-
-    const pos = $(this).position();
-    const areaWidth = $(this).outerWidth();
-    const areaHeight = $(this).outerHeight();
-    const cardWidth = $card.outerWidth();
-
-    const leftPos = pos.left + (areaWidth / 2) - (cardWidth / 2);
-    const topPos = pos.top + areaHeight + 15;
-
-    $card.css({
-      top: topPos + 'px',
-      left: leftPos + 'px',
-      zIndex: 2500
-    }).stop(true, true).fadeIn(200);
-  });
-
-  $(document).on('click', '.card-close', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    $('#markerInfoCard').fadeOut(200);
-  });
-
-  $(document).on('click', '#markerInfoCard', function(e) {
-    e.stopPropagation();
-  });
-
-  $(document).on('click', '.map-view-area', function(e) {
-    if (!$(e.target).closest('.map-marker-area, #markerInfoCard').length) {
-      $('#markerInfoCard').fadeOut(200);
+  // 視窗開關
+  $('#fullMapModal').on('click', function(e) {
+    if ($(e.target).is('#fullMapModal')) {
+        closeModal('#fullMapModal');
+        $('.map-placeholder .stall-markers-layer').show();
+        if (mapRefreshInterval) { clearInterval(mapRefreshInterval); mapRefreshInterval = null; }
     }
   });
 
-  $(document).on('click', '.map-full-btn', function() {
-    $('#fullMapModal').addClass('open');
-  });
-
-  $(document).on('click', '#closeFullMap', function() {
-    $('#fullMapModal').removeClass('open');
-    $('#markerInfoCard').fadeOut(200); 
+  $('#closeFullMap').on('click', function() {
+    closeModal('#fullMapModal');
+    $('.map-placeholder .stall-markers-layer').show();
+    if (mapRefreshInterval) { clearInterval(mapRefreshInterval); mapRefreshInterval = null; }
   });
 });
 

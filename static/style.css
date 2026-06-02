@@ -31,7 +31,7 @@ body {
 
 /* ══ NAVBAR ══════════════════════════════════════════════════ */
 .navbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 2;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 2rem;
   height: 64px;
@@ -60,7 +60,7 @@ body {
 
 /* Overlay */
 .overlaySideber {
-  display: none; position: fixed; inset: 0; z-index: 3;
+  display: none; position: fixed; inset: 0; z-index: 8;
   background: rgba(0,0,0,0.7); backdrop-filter: blur(2px);
   align-items: center; justify-content: center;
 }
@@ -76,7 +76,7 @@ body {
     );
   padding: 0;
   overflow-y: auto;
-  z-index: 4;
+  z-index: 9;
   transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -138,7 +138,7 @@ body {
 
 /* 👥 攤主與遊客共用登出遮罩 */
 #overlayLogout, #overlayVisitorLogout {
-  display: none; position: fixed; inset: 0; z-index: 4;
+  display: none; position: fixed; inset: 0; z-index: 10;
   background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
 }
 
@@ -155,7 +155,7 @@ body {
   transform: translate(-50%, -50%);
   top: 50%; left: 50%;
   animation: none;
-  z-index: 5;
+  z-index: 11;
 }
 
 /* 👥 當加上 .show 時，兩者都套用優雅的彈出動畫 */
@@ -559,7 +559,7 @@ body {
 
 /* ══ MODAL ═══════════════════════════════════════════════════ */
 .modal-overlay {
-  display: none; position: fixed; inset: 0; z-index: 3;
+  display: none; position: fixed; inset: 0; z-index: 10;
   background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
   align-items: center; justify-content: center;
 }
@@ -647,7 +647,6 @@ body {
     );
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 28px;
-  overflow: hidden;
   box-shadow: 0 20px 50px rgba(0,0,0,0.35);
   padding: 1.5rem;
 }
@@ -692,7 +691,6 @@ body {
 }
 .map-placeholder {
   position: relative;
-  overflow: hidden;
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,0.05);
   background: var(--bg2);
@@ -718,7 +716,60 @@ body {
   pointer-events: none;
 }
 
+/**/
+
+/* 讓地圖容器變成座標基準 */
+.map-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+/* 🚩 標記層：必須絕對定位並撐滿 */
+.stall-markers-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none; /* 讓這層不擋住滑鼠點擊 */
+}
+
+/* 🚩 個別標記點點樣式 */
+.map-marker {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(232, 168, 71, 0.85);
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);  /* 讓圓心對齊座標點 */
+  pointer-events: none;               /* 預設不攔截點擊 */
+  z-index: 2;
+  cursor: default;
+}
+
+.map-marker.occupied {
+  pointer-events: auto;               /* 有攤位的才能點擊 */
+  cursor: pointer;
+  background-color: var(--accent); /* 有人選了變橘色 */
+}
+
 /* ══ 完整地圖彈窗與互動標記樣式 ══════════════════════════════ */
+
+
+#modalMarkersLayer {
+    pointer-events: none;
+}
+#modalMarkersLayer .map-marker.occupied {
+    pointer-events: auto !important;
+}
 
 /* 1. 地圖彈窗*/
 #fullMapModal .modal {
@@ -777,22 +828,6 @@ body {
   display: block;
 }
 
-/* 🎯 標籤點擊區 */
-.map-marker-area {
-  position: absolute;
-  cursor: pointer;
-  z-index: 100; /* 高於圖片 */
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  border-radius: 4px;
-}
-
-/* 虛線點擊提示*/
-.map-marker-area:hover {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  outline: 1px dashed var(--accent);
-}
 
 /* 攤位介紹視窗 */
 .marker-info-card {
@@ -1623,6 +1658,48 @@ body {
 .vendor-panel .btn-outline,
 .vendor-panel .btn-outline:hover {
   color: #1a1408;
+}
+
+/*攤主選擇擺攤位置*/
+.position-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.pos-btn {
+    padding: 15px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.pos-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.pos-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+}
+
+.pos-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+.map-marker.empty {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  cursor: default;
+  pointer-events: none;
 }
 /* ══ 自訂滾動條 ══════════════════════════════════════════════ */
 .orders-list,

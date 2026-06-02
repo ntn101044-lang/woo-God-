@@ -56,6 +56,7 @@ class Stall(db.Model):
     products      = db.relationship('Product', secondary=offers, backref='stalls', lazy=True)
     queue_tickets = db.relationship('QueueTicket', backref='stall', lazy=True)
     orders        = db.relationship('Order', backref='stall', lazy=True)
+    stall_number  = db.Column(db.Integer, unique=True, nullable=True)
 
 class Visitor(db.Model):
     __tablename__ = 'visitor'
@@ -201,7 +202,58 @@ def vendor_logout():
     session.clear()
     return redirect(url_for('index'))
 
-@app.route('/vendor/stall', methods=['GET', 'POST', 'DELETE'])
+# ══════════════════════════════════════════════════════════════
+# 讓攤主選位置 (整合「建立狀態檢查」與「佔用檢查」)
+# ══════════════════════════════════════════════════════════════
+@app.route('/vendor/select_stall_position', methods=['POST'])
+@vendor_required
+def select_stall_position():
+    data = request.get_json()
+    vendor_id = session.get('vendor_id')
+    
+    # 1. 取得並強制轉型位置編號
+    try:
+        chosen_number = int(data.get('stall_number'))
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'message': 'Invalid stall position number'}), 400
+
+    # 2. 驗證數字範圍 (1~12)
+    if chosen_number not in range(1, 13):
+        return jsonify({'success': False, 'message': 'Please select a position from 1 to 12'}), 400
+
+    try:
+        # 3. 【整合點一】檢查攤主是否已經「建立」過攤位資料
+        # 如果攤主連名字都沒有填過，就不應該讓他選位子
+        stall = Stall.query.filter_by(vendor_id=vendor_id).first()
+        if not stall:
+            return jsonify({
+                'success': False, 
+                'message': 'No stall information found. Please create your stall first'
+            }), 404
+
+        # 4. 【整合點二】檢查該位置是否已被「其他人」佔用
+        existing = Stall.query.filter_by(stall_number=chosen_number).first()
+        if existing and existing.vendor_id != vendor_id:
+            return jsonify({
+                'success': False, 
+                'message': f'Position {chosen_number}is already occupied by "{existing.stall_name}"'
+            }), 409
+
+        # 5. 更新攤位位置
+        stall.stall_number = chosen_number
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Successfully assigned to position {chosen_number} '
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"A stall position selection error occurred: {str(e)}")
+        return jsonify({'success': False, 'message': 'The system is busy. Please try again later'}), 500
+
+@app.route('/vendor/stall', methods=['GET', 'POST', 'DELETE']) # 🎯 1. 加上 DELETE 允許
 @vendor_required
 def vendor_stall():
     vendor_id = session['vendor_id']
@@ -226,7 +278,7 @@ def vendor_stall():
         if existing:
             return jsonify({'success': False, 'message': 'You already have a stall.'})
         stall = Stall(stall_name=data.get('stall_name'), zone_type=data.get('zone_type'),
-                      status='active', vendor_id=vendor_id)
+                      status='active', vendor_id=vendor_id, stall_number=data.get('stall_number'))
         db.session.add(stall)
         db.session.commit()
         return jsonify({'success': True, 'stall': {
@@ -383,7 +435,8 @@ def stall_list():
     for s in stalls:
         q = QueueTicket.query.filter_by(stall_id=s.stall_id, status='waiting').count()
         result.append({'stall_id': s.stall_id, 'stall_name': s.stall_name,
-                       'zone_type': s.zone_type, 'queue_count': q, 'wait_minutes': q * 3})
+                       'zone_type': s.zone_type, 'queue_count': q, 'wait_minutes': q * 3
+                       ,'stall_number': s.stall_number})
     result.sort(key=lambda x: x['queue_count'], reverse=True)
     return jsonify({'stalls': result})
 
@@ -614,7 +667,7 @@ def admin_dashboard():
     try:
         all_visitors = [{'VisitorID': v.visitor_id, 'Account': v.account} for v in Visitor.query.all()]
         all_vendors = [{'VendorID': v.vendor_id, 'VendorName': v.name, 'Phone': v.phone} for v in Vendor.query.all()]
-        all_stalls = [{'StallID': s.stall_id, 'StallName': s.stall_name, 'ZoneType': s.zone_type, 'Status': s.status, 'VendorID': s.vendor_id, 'EventID': s.event_id} for s in Stall.query.all()]
+        all_stalls = [{'StallID': s.stall_id, 'StallName': s.stall_name, 'ZoneType': s.zone_type, 'Status': s.status, 'VendorID': s.vendor_id, 'EventID': s.event_id, "StallNumber": s.stall_number} for s in Stall.query.all()]
         all_events = [{'EventID': e.event_id, 'EventName': e.event_name, 'StartDate': e.start_date, 'EndDate': e.end_date, 'MapImageURL': e.map_image_url} for e in Event.query.all()]
         all_tickets = [{'TicketNumber': t.ticket_number, 'WaitTime': t.expected_wait_time, 'Status': t.status, 'StallID': t.stall_id, 'VisitorID': t.visitor_id} for t in QueueTicket.query.all()]
         all_products = [{'ProductID': p.product_id, 'ProductName': p.name, 'Price': p.price} for p in Product.query.all()]

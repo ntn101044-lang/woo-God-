@@ -190,7 +190,7 @@
     <div class="section-body">
         <table>
             <thead>
-                <tr><th>StallID</th><th>StallName</th><th>ZoneType</th><th>Status</th><th>VendorID</th><th>EventID</th></tr>
+                <tr><th>StallID</th><th>StallName</th><th>ZoneType</th><th>Status</th><th>VendorID</th><th>EventID</th><th>StallNumber</th></tr>
             </thead>
             <tbody>
                 {% for stall in stalls %}
@@ -203,9 +203,10 @@
                     </td>
                     <td>{{ stall['VendorID'] }}</td>
                     <td>{{ stall['EventID'] }}</td>
+                    <td>{{ stall['StallNumber'] }}</td>
                 </tr>
                 {% else %}
-                <tr><td colspan="6" class="empty-msg">No stall data found</td></tr>
+                <tr><td colspan="7" class="empty-msg">No stall data found</td></tr>
                 {% endfor %}
             </tbody>
         </table>
