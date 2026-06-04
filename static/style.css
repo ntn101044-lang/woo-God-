@@ -1528,9 +1528,33 @@ body {
   margin-bottom: 1rem;
 }
 .cart-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 10px; color: var(--text-muted); }
-.cart-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-.cart-empty { font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 8px 0; }
 
+/* 🎯 購物車商品容器：限制高度並啟動內部滑桿 */
+.cart-items { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 6px; 
+  margin-bottom: 10px; 
+  
+  max-height: 130px;       /* 🎯 關鍵調整：從 200px 縮小到 130px，只要超過 3 行就會提早蹦出滑桿！ */
+  overflow-y: auto;        
+  padding-right: 6px;      
+}
+
+/* 🎨 額外加分：把購物車專屬滑桿做得跟你們網頁一樣細緻（暗金/黑色系） */
+.cart-items::-webkit-scrollbar {
+  width: 6px;              /* 滑桿寬度細細的很好看 */
+}
+.cart-items::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2); /* 滑軌背景 */
+  border-radius: 4px;
+}
+.cart-items::-webkit-scrollbar-thumb {
+  background: var(--primary, #e5a93c); /* 滑桿主體顏色，自動吃你們的金色變數 */
+  border-radius: 4px;
+}
+
+.cart-empty { font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 8px 0; }
 .cart-row {
   display: flex; justify-content: space-between;
   font-size: 0.83rem; padding: 4px 0;

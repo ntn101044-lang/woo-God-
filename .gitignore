@@ -10,3 +10,6 @@ env/
 
 # Mac 系統隱藏檔
 .DS_Store
+
+# DB
+instance/market.db
