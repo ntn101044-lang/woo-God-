@@ -5,7 +5,7 @@ from datetime import datetime
 def seed_all_tables():
     with app.app_context():
         print("==================================================")
-        print("【全系統初始化】開始清理舊資料，確保不重複插入...")
+        print("【System Initialization Starting to clean up old data, ensuring no duplicate insertions...")
         print("==================================================")
         
         # 統一清理所有資料表 (包含家億防區的 Order 與 Includes)

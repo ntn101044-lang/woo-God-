@@ -31,31 +31,64 @@ body {
 
 /* ══ NAVBAR ══════════════════════════════════════════════════ */
 .navbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 5;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 clamp(1rem, 4vw, 2rem);
   height: 64px;
   background: rgba(15,14,12,0.85);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+  min-width: 0; /* 防止 flex 子項撐破容器 */
 }
 
-.nav-brand { display: flex; align-items: center; gap: 10px; }
-.brand-icon { font-size: 1.4rem; cursor: pointer;}
+.nav-brand {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; /* 品牌 logo 不縮小 */
+  min-width: 0;
+}
+
+.brand-icon {
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .brand-name {
   font-family: sans-serif;
-  font-size: 1.2rem; font-weight: 800;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 800;
   color: var(--accent);
   letter-spacing: 0.02em;
+  white-space: nowrap; /* 避免品牌名換行 */
 }
 
-.nav-right { display: flex; align-items: center; gap: 12px; }
+.nav-right {
+  display: flex; align-items: center; gap: clamp(6px, 1.5vw, 12px);
+  flex-shrink: 0;
+  min-width: 0;
+}
 
 .vendor-badge {
-  font-size: 0.85rem; color: var(--accent);
+  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+  color: var(--accent);
   background: rgba(232,168,71,0.12);
   border: 1px solid rgba(232,168,71,0.3);
-  padding: 4px 12px; border-radius: 20px;
+  padding: 4px clamp(6px, 1.5vw, 12px);
+  border-radius: 20px;
+  white-space: nowrap; /* 避免 badge 文字換行 */
+}
+
+/* ── 小螢幕（手機）< 480px ──────────────────────── */
+@media (max-width: 480px) {
+  .navbar {
+    height: 56px;
+  }
+
+  .vendor-badge {
+    /* 小螢幕隱藏 badge，節省空間 */
+    display: none;
+  }
 }
 
 /* Overlay */
@@ -91,11 +124,10 @@ body {
   #sidebar { 
     transform: translateX(-260px); 
     position: fixed;
-    z-index: 4;
     width: 220px; height: 100%;
   }
   #closeSidebar {display: inline; top: 8px; right: 8px;}
-  #topbar {display: flex; background-color: #fbe792; color: #8C7764;}
+  #topbar {display: flex; background-color: #fbe792; color: #8C7764; }
   .page-header-title {margin-top: 50px;}
   .logo {margin-top: 24px;}
   .logophoto:hover {transform: none;}
