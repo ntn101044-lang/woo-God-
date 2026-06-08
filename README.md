@@ -7,7 +7,7 @@
   (4) Both types of users can track order progress.  
   (5) An additional admin dashboard is implemented for database monitoring and management.  
 
-**Setup Steps**  
+**Setup Steps:**  
   (1) Download all project files.  
   (2) Open the terminal and run python seed.py to initialize the database.  
   (3) Then run python app.py to start the server and ensure the program keeps running.  
