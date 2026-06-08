@@ -1,11 +1,15 @@
-**此為DBMS Group9 之線上攤位排隊系統專案 請注意:**
-(1) 6/10 為最終展示日
-(2) 使用git & flask 實作(作業要求) 
-(3) 可連結至網址 "https://www.youtube.com/watch?v=FKXRiAiQFiY" 查看Git基本操作
+**This is the online stall queue management system project by Group 9**
 
+*This project includes the following features:*
+(1) Different user authentication and registration for both stall owners and visitors. 
+(2) Stall owners can create stalls, and visitors can place orders (real-time updates).
+(3) The Queue Ticket system is the core feature of this project, which visualizes crowd levels using a traffic-light indicator on the website.
+(4) Both types of users can track order progress.
+(5) An additional admin dashboard is implemented for database monitoring and management.
 
-**此專案將會包含:**
-(1) 不同使用者登入(攤主及遊客) 
-(2) Queue_Ticket顯示排隊人潮 為此專案的核心內容(網站上應顯示燈號表示目前攤位人潮)
-(3) Order 應該要雙方使用者都能夠追蹤進度 
-(4) 要做響應式(通常攤主透過電腦網站設立攤位，遊客透過手機隨時查看進度。希望來得及弄)
+*Setup Steps*
+(1) Download all project files.
+(2) Open the terminal and run python seed.py to initialize the database.
+(3) Then run python app.py to start the server and ensure the program keeps running.
+(4) The **homepage** can be accessed at: http://127.0.0.1:5000
+(5) The **admin dashboard** is available at: http://127.0.0.1:5000/admin_dashboard
