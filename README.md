@@ -1,8 +1,8 @@
 **This is the online stall queue management system project by Group 9**
 
 *This project includes the following features:*
-(1) Different user authentication and registration for both stall owners and visitors. 
-(2) Stall owners can create stalls, and visitors can place orders (real-time updates).
+(1) Different user authentication and registration for both stall owners and visitors. \n
+(2) Stall owners can create stalls, and visitors can place orders (real-time updates).\n
 (3) The Queue Ticket system is the core feature of this project, which visualizes crowd levels using a traffic-light indicator on the website.
 (4) Both types of users can track order progress.
 (5) An additional admin dashboard is implemented for database monitoring and management.
