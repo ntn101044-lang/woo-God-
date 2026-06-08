@@ -5,10 +5,9 @@ from datetime import datetime
 def seed_all_tables():
     with app.app_context():
         print("==================================================")
-        print("【System Initialization Starting to clean up old data, ensuring no duplicate insertions...")
-        print("==================================================")
+        print("System Initialization Starting to clean up old data, ensuring no duplicate insertions...")
         
-        # 統一清理所有資料表 (包含家億防區的 Order 與 Includes)
+        # 統一清理所有資料表 
         Includes.query.delete()
         Order.query.delete()
         QueueTicket.query.delete()
@@ -22,7 +21,6 @@ def seed_all_tables():
         # ══════════════════════════════════════════════════════════════
         # 1.建立市集活動與遊客 (Event & Visitor)
         # ══════════════════════════════════════════════════════════════
-        print("\n[1/5] Event and visitor data are being established...")
         target_event = Event(
             event_name="Summer-themed market",
             start_date="2026-05-10",
@@ -44,7 +42,6 @@ def seed_all_tables():
         # ══════════════════════════════════════════════════════════════
         # 2. 建立攤位與攤主資訊
         # ══════════════════════════════════════════════════════════════
-        print("\n[2/5] Thai milk tea stalls are being set up...")
         vendor_1 = Vendor(
             account="vendor1",
             name="Thai milk tea",
