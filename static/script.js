@@ -21,6 +21,18 @@ $(function () {
     setTimeout(() => $toast.animate({ opacity: 0 }, 300, () => $toast.remove()), 3000);
   };
 
+  function openModal(id) {
+    $(id).addClass('open');
+    $('body').addClass('modal-open');
+  }
+  function closeModal(id) {
+    $(id).removeClass('open');
+    // 如果所有 Modal 都關了，才解鎖背景捲動
+    if ($('.modal-overlay.open').length === 0) {
+      $('body').removeClass('modal-open');
+    }
+  }
+
   window.openModal = function(id) { $(id).addClass('open'); };
   window.closeModal = function(id) { $(id).removeClass('open'); };
   
@@ -269,6 +281,7 @@ $(function () {
       }
     });
   });
+
 
   /*攤主選位置及地圖更新*/
   /* ══ 攤位位置選取 (1-6 號位) ══════════════════════════════════ */
@@ -558,16 +571,10 @@ function renderMapMarkers() {
   });
 
   // Check Visitor Session on Load
-  function checkVisitorSession() {
-    $.get('/visitor/session', function (data) {
-      if (data.logged_in) {
-        updateVisitorUI(data.account);
-      } else {
-        updateVisitorUI(null);
-      }
-    });
-  }
-  if ($('#visitorLoginBtn').length) checkVisitorSession();
+if ($('#visitorInfo').is(':visible')) {
+  $('#visitorFab').show();
+  updateFabBadge();
+}
 
   /* ══ Stall Products & Cart ════════════════════════════════════ */
 

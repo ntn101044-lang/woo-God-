@@ -1900,3 +1900,26 @@ body {
     background: #aaa;
 
 }
+
+/* ══ 修正：Modal 在視窗高度不足時可捲動 ═════════════════════ */
+.modal-overlay {
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+}
+ 
+.modal {
+  max-height: none;   /* 移除舊的高度限制 */
+  width: 100%;
+}
+ 
+/* 讓 modal-lg 也不超出 */
+.modal-lg {
+  max-height: none;
+}
+ 
+/* ══ Modal 開啟時鎖住背景捲動 ════════════════════════════════ */
+body.modal-open {
+  overflow: hidden;
+}
+ 
